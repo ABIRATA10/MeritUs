@@ -43,7 +43,7 @@ export const ApplicationAssistant: React.FC<ApplicationAssistantProps> = ({ prof
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 100 }}
-          className="fixed right-6 bottom-6 z-[100] w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden"
+          className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-[100] w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden"
         >
           <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">

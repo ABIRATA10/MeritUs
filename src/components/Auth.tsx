@@ -7,6 +7,22 @@ interface AuthProps {
   onLogin: (user: User) => void;
 }
 
+const Logo = () => (
+  <div className="flex items-center gap-3">
+    <div className="relative w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-100 overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-violet-600 opacity-10 group-hover:opacity-20 transition-opacity" />
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-indigo-600 relative z-10 transform group-hover:scale-110 transition-transform duration-300">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+    <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+      Meritas
+    </span>
+  </div>
+);
+
 export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -183,14 +199,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         className="w-full max-w-[480px] bg-white/90 backdrop-blur-2xl rounded-[3rem] p-10 shadow-2xl shadow-indigo-100/50 border border-white relative z-10"
       >
+        <div className="flex justify-center mb-8">
+          <Logo />
+        </div>
         <div className="text-center mb-10">
-          <motion.div 
-            initial={{ rotate: -10 }}
-            animate={{ rotate: 0 }}
-            className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-indigo-200 mx-auto mb-8"
-          >
-            <Sparkles className="text-white" size={40} />
-          </motion.div>
           <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-3">
             {isVerifying || isResetVerifying ? 'Verification' : isResetMode ? 'New Password' : isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Get Started'}
           </h2>
@@ -203,7 +215,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   ? 'Enter your email to receive a reset code' 
                   : isLogin 
                     ? 'Sign in to access your scholarship matches' 
-                    : 'Join GrantHer to find your funding'}
+                    : 'Join Meritas to find your funding'}
           </p>
         </div>
 

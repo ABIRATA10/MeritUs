@@ -19,11 +19,11 @@ const Logo = ({ size = 24 }: { size?: number }) => (
     viewBox="0 0 24 24" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
-    className="drop-shadow-sm"
+    className="drop-shadow-md"
   >
-    <path d="M2 10l10-5 10 5-10 5-10-5Z" fill="black" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M22 10v6" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" className="text-indigo-600"/>
+    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"/>
+    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"/>
   </svg>
 );
 
@@ -382,11 +382,11 @@ export default function App() {
             setResults([]); 
             setView('Landing'); 
           }}>
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 border border-slate-100 group-hover:scale-110 transition-transform">
               <Logo size={24} />
             </div>
             <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
-              GrantHer
+              Meritas
             </span>
           </div>
           
@@ -530,7 +530,7 @@ export default function App() {
                 >
                   <Globe size={12} /> Global Scholarship Search Engine
                 </motion.div>
-                <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tight leading-[0.9]">
+                <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-slate-900 tracking-tight leading-[0.9]">
                   Your Education, <br/>
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-600">Fully Funded.</span>
                 </h1>
@@ -587,6 +587,7 @@ export default function App() {
                 onApply={handleApply}
                 onUpdateStatus={handleUpdateApplicationStatus}
                 onSave={handleSave}
+                onClearHistory={() => setSearchHistory([])}
               />
             </motion.div>
           ) : view === 'Applications' ? (
@@ -795,8 +796,8 @@ export default function App() {
                       )}
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                      <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto min-w-0">
+                      <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar min-w-0">
                         <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100 shrink-0">
                           {(['All', 'Government', 'Private'] as const).map((cat) => (
                             <button
@@ -950,11 +951,11 @@ export default function App() {
                             className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
                           >
                             <option value="All">All Communities</option>
-                            <option value="Women in STEM">Women in STEM</option>
+                            <option value="Students in STEM">Students in STEM</option>
                             <option value="Minority">Minority</option>
                             <option value="SC/ST">SC/ST</option>
                             <option value="Differently Abled">Differently Abled</option>
-                            <option value="Single Mother">Single Mother</option>
+                            <option value="Single Parent">Single Parent</option>
                             <option value="Rural Background">Rural Background</option>
                           </select>
                         </div>
@@ -1209,16 +1210,16 @@ export default function App() {
 
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-slate-100">
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3 opacity-50">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-3 opacity-50 hover:opacity-100 transition-opacity">
+            <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center">
               <Logo size={16} />
             </div>
             <span className="text-sm font-black tracking-tighter text-slate-900">
-              GrantHer
+              Meritas
             </span>
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-            © 2026 GrantHer • Empowering Global Education
+            © 2026 Meritas • Empowering Global Education
           </p>
           <div className="flex items-center gap-6">
             <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">Privacy</a>

@@ -8,6 +8,7 @@ export interface User {
 
 export interface UserProfile {
   fullName: string;
+  profileImageUrl?: string;
   phoneNumber?: string;
   age: number;
   gender: string;
@@ -22,7 +23,7 @@ export interface UserProfile {
   address: string;
   caste: string; // e.g., General, OBC, SC, ST
   incomeBracket: string;
-  background: string; // e.g., "Single mother", "First-generation student", "STEM enthusiast"
+  background: string; // e.g., "Single parent", "First-generation student", "STEM enthusiast"
   careerGoals: string;
   extracurriculars?: string;
   awards?: string;
@@ -41,7 +42,7 @@ export interface Scholarship {
   description: string;
   category: 'Government' | 'Private';
   link: string;
-  targetCommunity?: string; // e.g., "OBC", "SC/ST", "Minority", "Women in STEM"
+  targetCommunity?: string; // e.g., "OBC", "SC/ST", "Minority", "Students in STEM"
   scope: 'State' | 'National' | 'Global';
   major?: string; // Field of study
   minGpa?: number;

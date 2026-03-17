@@ -14,7 +14,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     fullName: '',
     phoneNumber: '',
     age: 20,
-    gender: 'Female',
+    gender: 'Prefer not to say',
     educationLevel: 'Undergraduate',
     yearOfStudy: '1st Year',
     institution: '',
@@ -289,11 +289,11 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               onChange={handleChange}
               className={inputClasses}
             >
+              <option>Prefer not to say</option>
               <option>Female</option>
               <option>Male</option>
               <option>Non-binary</option>
               <option>Other</option>
-              <option>Prefer not to say</option>
             </select>
           </div>
 

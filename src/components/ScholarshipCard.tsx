@@ -95,7 +95,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
         isHighMatch ? 'bg-emerald-400' : isMediumMatch ? 'bg-amber-400' : 'bg-rose-400'
       }`} />
 
-      <div className="flex justify-between items-start mb-6 relative z-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start mb-6 relative z-10 gap-4">
         <div className="flex flex-wrap gap-2">
           <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${categoryStyles}`}>
             {scholarship.category}

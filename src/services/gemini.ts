@@ -12,7 +12,7 @@ export async function findScholarships(
   userProfile: UserProfile
 ): Promise<ScholarshipMatch[]> {
   const prompt = `
-    As an expert financial aid advisor for women, perform an exhaustive real-time search for ALL available and upcoming scholarships worldwide for the following user profile.
+    As an expert financial aid advisor, perform an exhaustive real-time search for ALL available and upcoming scholarships worldwide for the following user profile.
     
     User Profile:
     ${JSON.stringify(userProfile, null, 2)}

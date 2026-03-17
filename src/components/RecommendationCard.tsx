@@ -49,8 +49,8 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
     >
       {/* Header with Match Score */}
       <div className="relative p-5 md:p-6 pb-0">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
+          <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100">
               {scholarship.category || 'General'}
             </span>

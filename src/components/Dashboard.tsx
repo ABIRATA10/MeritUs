@@ -32,6 +32,7 @@ interface DashboardProps {
   onApply: (id: string) => void;
   onUpdateStatus: (id: string, status: ApplicationStatus) => void;
   onSave: (id: string) => void;
+  onClearHistory: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
@@ -43,7 +44,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   savedIds,
   onApply,
   onUpdateStatus,
-  onSave
+  onSave,
+  onClearHistory
 }) => {
   const [recommendations, setRecommendations] = React.useState<ScholarshipMatch[]>([]);
   const [isRecLoading, setIsRecLoading] = React.useState(false);
@@ -593,14 +595,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
           transition={{ delay: 0.5 }}
           className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-sm"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center">
-              <Search size={18} className="text-slate-400" />
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center">
+                <Search size={18} className="text-slate-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Recent Queries</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Your search history</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Recent Queries</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Your search history</p>
-            </div>
+            {searchHistory.length > 0 && (
+              <button 
+                onClick={onClearHistory}
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">

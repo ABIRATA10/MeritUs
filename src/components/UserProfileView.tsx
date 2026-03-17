@@ -33,6 +33,21 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onBack
 }) => {
   const [activeTab, setActiveTab] = React.useState<'overview' | 'edit' | 'saved'>('overview');
+  const [profileImageUrl, setProfileImageUrl] = React.useState<string | null>(profile.profileImageUrl || null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setProfileImageUrl(result);
+        onUpdateProfile({ ...profile, profileImageUrl: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const savedScholarships = results.filter(r => savedIds.includes(r.scholarship.id));
 
@@ -51,28 +66,47 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[3rem] border border-slate-50 shadow-xl shadow-slate-200/50">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-            <User size={40} />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-slate-50 shadow-xl shadow-slate-200/50">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+          <div 
+            className="relative w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0 overflow-hidden cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {profileImageUrl ? (
+              <img src={profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+                <User size={40} />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Edit3 size={20} className="text-white" />
+            </div>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
           </div>
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">{profile.fullName}</h2>
-            <p className="text-slate-400 font-medium flex items-center gap-2">
+            <p className="text-slate-400 font-medium flex items-center justify-center sm:justify-start gap-2 mt-1">
               <MapPin size={14} className="text-rose-400" /> {profile.state}, {profile.country}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           <button 
             onClick={onBack}
-            className="px-6 py-3 bg-slate-50 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-100 flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-3 bg-slate-50 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-100 flex items-center justify-center gap-2"
           >
             <ArrowLeft size={14} /> Back
           </button>
           <button 
             onClick={() => setActiveTab('edit')}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
           >
             <Edit3 size={14} /> Edit Profile
           </button>
@@ -80,7 +114,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-2xl w-fit border border-slate-100">
+      <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar border border-slate-100">
         <button
           onClick={() => setActiveTab('overview')}
           className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
