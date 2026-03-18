@@ -4,6 +4,9 @@ import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, LogIn, Phone, Eye, 
 import { User } from '../types';
 import { Logo } from './Logo';
 import { useLanguage } from '../contexts/LanguageContext';
+const API_URL = import.meta.env.VITE_API_URL || '';
+
+
 
 interface AuthProps {
   onLogin: (user: User) => void;
@@ -34,7 +37,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     const handleMessage = (event: MessageEvent) => {
       // Validate origin is from AI Studio preview or localhost
       const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) && !origin.endsWith('.railway.app') {
         return;
       }
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
