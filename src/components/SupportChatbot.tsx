@@ -3,8 +3,9 @@ import { GoogleGenAI } from "@google/genai";
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, X, Send, Bot, User, Loader2, HelpCircle, AlertTriangle, Info, Menu } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { User as UserType } from '../types';
 
-const SakhiFlower = ({ size = 24 }: { size?: number }) => (
+const ZigIcon = ({ size = 24 }: { size?: number }) => (
   <svg 
     width={size} 
     height={size} 
@@ -12,20 +13,8 @@ const SakhiFlower = ({ size = 24 }: { size?: number }) => (
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* 5 Petals - Pink */}
-    {[0, 72, 144, 216, 288].map((angle) => (
-      <ellipse
-        key={angle}
-        cx="50"
-        cy="30"
-        rx="15"
-        ry="25"
-        fill="#FF69B4"
-        transform={`rotate(${angle} 50 50)`}
-      />
-    ))}
-    {/* Center - Blue */}
-    <circle cx="50" cy="50" r="12" fill="#4F46E5" />
+    <rect width="100" height="100" rx="20" fill="#4F46E5" />
+    <path d="M30 30 L70 30 L30 70 L70 70" stroke="white" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -37,12 +26,27 @@ interface Message {
   timestamp: Date;
 }
 
-export const SupportChatbot: React.FC = () => {
+interface SupportChatbotProps {
+  user: UserType | null;
+}
+
+export const SupportChatbot: React.FC<SupportChatbotProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    let timeOfDay = 'evening';
+    if (hour < 12) timeOfDay = 'morning';
+    else if (hour < 18) timeOfDay = 'afternoon';
+    
+    const name = user?.fullName?.split(' ')[0] || 'there';
+    return `Hi ${name}, good ${timeOfDay}! How can I help you?`;
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'bot',
-      content: "Hello! I'm **Sakhi**, your personal scholarship advisor and mentor here at Meritas. 🌱\n\nI'm here to help you navigate your funding journey—whether you need help strategizing an application essay, finding the right opportunities, or just figuring out where to start. \n\nWhat are we working on today? 💡",
+      content: getGreeting(),
       timestamp: new Date()
     }
   ]);
@@ -82,17 +86,16 @@ export const SupportChatbot: React.FC = () => {
         model: "gemini-3-flash-preview",
         config: {
           systemInstruction: `
-            You are "Sakhi", the official AI Scholarship Advisor and Mentor for Meritas.
-            "Sakhi" means "friend" in Sanskrit, representing empowerment and unwavering support.
+            You are "Zig", the official AI Scholarship Advisor and Mentor for MeritUs.
             
             Your Persona:
             - **Empowering & Professional**: You are a highly knowledgeable mentor. You believe in the potential of every student and provide strategic, actionable advice to help them secure funding.
             - **Empathetic & Grounded**: You understand the systemic challenges students face in education and finance. You validate their experiences and offer practical solutions.
             - **Clear & Concise**: Your advice is structured, easy to follow, and directly addresses the user's query. Avoid overwhelming them with too much text.
-            - **Warm but not overly bubbly**: Use emojis purposefully (e.g., 💡, 📝, 🎯, 🌱) rather than excessively. Your warmth comes from your helpfulness and understanding.
-
+            - **Multilingual Support**: You MUST understand and respond to Hindi and Odia written in English (Latin script/Hinglish/Odi-lish). For example, if a user says "kesa hai" or "kemiti achu" (how are you), you must understand it and respond appropriately, either in the same language (written in English) or in English, depending on the user's preference or context.
+            
             Platform Context:
-            - Meritas is a platform dedicated to matching students with global scholarships, grants, and fellowships.
+            - MeritUs is a platform dedicated to matching students with global scholarships, grants, and fellowships.
             - Users have profiles detailing their academic background, financial need, and career goals.
             - The platform features an AI-driven matching system, a dashboard for tracking applications, and personalized recommendations.
 
@@ -149,10 +152,10 @@ export const SupportChatbot: React.FC = () => {
             <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-                  <SakhiFlower size={32} />
+                  <ZigIcon size={32} />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm uppercase tracking-widest">Sakhi</h3>
+                  <h3 className="font-black text-sm uppercase tracking-widest">Zig</h3>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Online & Ready</span>
@@ -177,7 +180,7 @@ export const SupportChatbot: React.FC = () => {
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                       msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-white text-white'
                     }`}>
-                      {msg.role === 'user' ? <User size={16} /> : <SakhiFlower size={20} />}
+                      {msg.role === 'user' ? <User size={16} /> : <ZigIcon size={20} />}
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user' 
@@ -200,7 +203,7 @@ export const SupportChatbot: React.FC = () => {
                 <div className="flex justify-start">
                   <div className="flex gap-3">
                     <div className="w-8 h-8 bg-white text-white rounded-lg flex items-center justify-center">
-                      <SakhiFlower size={20} />
+                      <ZigIcon size={20} />
                     </div>
                     <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
                       <Loader2 className="animate-spin text-indigo-500" size={18} />

@@ -31,7 +31,7 @@ export const NotificationManager: React.FC = () => {
     // Simulate an initial notification
     const timer = setTimeout(() => {
       addNotification({
-        title: "Welcome to Meritas!",
+        title: "Welcome to MeritUs!",
         message: "Complete your profile to get real-time scholarship matches tailored to your background.",
         type: 'info'
       });

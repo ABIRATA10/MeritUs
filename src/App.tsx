@@ -11,21 +11,8 @@ import { UserProfile, Scholarship, MatchResult, User as UserType, ScholarshipMat
 import { findScholarships } from './services/gemini';
 import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, Globe, MapPin, User, LogOut, LayoutDashboard, BookmarkCheck, Heart, Bot, AlertTriangle, Clock, RefreshCw, History, Bell, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const Logo = ({ size = 24 }: { size?: number }) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className="drop-shadow-md"
-  >
-    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" className="text-indigo-600"/>
-    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"/>
-    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"/>
-  </svg>
-);
+import { Logo } from './components/Logo';
+import { useLanguage } from './contexts/LanguageContext';
 
 export default function App() {
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(() => {
@@ -96,6 +83,7 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [reminders, setReminders] = React.useState<Reminder[]>([]);
+  const { language, setLanguage, t } = useLanguage();
 
   // Persist data
   React.useEffect(() => {
@@ -386,7 +374,7 @@ export default function App() {
               <Logo size={24} />
             </div>
             <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
-              Meritas
+              MeritUs
             </span>
           </div>
           
@@ -394,6 +382,15 @@ export default function App() {
             <>
               {/* Desktop Menu */}
               <div className="hidden lg:flex items-center gap-4">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                  <option value="en">EN</option>
+                  <option value="hi">HI</option>
+                  <option value="or">OR</option>
+                </select>
                 <NotificationManager />
                 <button 
                   onClick={() => setView(view === 'Dashboard' ? 'Results' : 'Dashboard')}
@@ -445,6 +442,15 @@ export default function App() {
 
               {/* Mobile Menu Toggle */}
               <div className="lg:hidden flex items-center gap-3">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                  <option value="en">EN</option>
+                  <option value="hi">HI</option>
+                  <option value="or">OR</option>
+                </select>
                 <NotificationManager />
                 <button 
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -528,15 +534,15 @@ export default function App() {
                   transition={{ delay: 0.2 }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100 mb-4"
                 >
-                  <Globe size={12} /> Global Scholarship Search Engine
+                  <Globe size={12} /> {t('landing.badge')}
                 </motion.div>
                 <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-slate-900 tracking-tight leading-[0.9]">
-                  Your Education, <br/>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-600">Fully Funded.</span>
+                  {t('landing.title1')} <br/>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-600">{t('landing.title2')}</span>
                 </h1>
                 <p className="text-lg text-slate-500 leading-relaxed font-medium max-w-2xl mx-auto">
-                  We use advanced AI to scan worldwide government and private databases in real-time. 
-                  <span className="block text-indigo-600 font-bold mt-2">Complete your profile below to unlock personalized funding opportunities.</span>
+                  {t('landing.desc1')} 
+                  <span className="block text-indigo-600 font-bold mt-2">{t('landing.desc2')}</span>
                 </p>
               </div>
               
@@ -547,22 +553,22 @@ export default function App() {
                   <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
                     <Globe size={28} />
                   </div>
-                  <h3 className="font-black text-slate-900 mb-2">Global Reach</h3>
-                  <p className="text-sm text-slate-400 font-medium">Access scholarships from 190+ countries instantly.</p>
+                  <h3 className="font-black text-slate-900 mb-2">{t('landing.f1.title')}</h3>
+                  <p className="text-sm text-slate-400 font-medium">{t('landing.f1.desc')}</p>
                 </div>
                 <div className="p-6 group">
                   <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 group-hover:-rotate-3">
                     <Sparkles size={28} />
                   </div>
-                  <h3 className="font-black text-slate-900 mb-2">AI Precision</h3>
-                  <p className="text-sm text-slate-400 font-medium">Smart matching based on your unique story and goals.</p>
+                  <h3 className="font-black text-slate-900 mb-2">{t('landing.f2.title')}</h3>
+                  <p className="text-sm text-slate-400 font-medium">{t('landing.f2.desc')}</p>
                 </div>
                 <div className="p-6 group">
                   <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
                     <Logo size={28} />
                   </div>
-                  <h3 className="font-black text-slate-900 mb-2">Career First</h3>
-                  <p className="text-sm text-slate-400 font-medium">Funding that aligns with your professional dreams.</p>
+                  <h3 className="font-black text-slate-900 mb-2">{t('landing.f3.title')}</h3>
+                  <p className="text-sm text-slate-400 font-medium">{t('landing.f3.desc')}</p>
                 </div>
               </div>
             </motion.div>
@@ -1164,7 +1170,7 @@ export default function App() {
         />
       )}
 
-      <SupportChatbot />
+      <SupportChatbot user={currentUser} />
 
       {/* Logout Confirmation Modal */}
       <AnimatePresence>
@@ -1215,11 +1221,11 @@ export default function App() {
               <Logo size={16} />
             </div>
             <span className="text-sm font-black tracking-tighter text-slate-900">
-              Meritas
+              MeritUs
             </span>
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-            © 2026 Meritas • Empowering Global Education
+            © 2026 MeritUs • Empowering Global Education
           </p>
           <div className="flex items-center gap-6">
             <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">Privacy</a>

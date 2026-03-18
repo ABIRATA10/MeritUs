@@ -149,12 +149,15 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
               </select>
             </div>
           ) : (
-            <button
+            <a
+              href={scholarship.link}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => onApply(scholarship.id)}
               className="flex-grow flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 hover:shadow-indigo-200"
             >
               Apply Now <ArrowUpRight size={16} />
-            </button>
+            </a>
           )}
           
           <button

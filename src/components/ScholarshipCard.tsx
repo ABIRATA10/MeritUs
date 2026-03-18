@@ -383,6 +383,19 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
                     {scholarship.eligibilityCriteria}
                   </p>
                 </div>
+
+                {scholarship.requirements && scholarship.requirements.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                      <CheckCircle2 size={12} /> Things Required for Applying
+                    </p>
+                    <ul className="list-disc list-inside text-xs text-slate-600 leading-relaxed font-medium space-y-1">
+                      {scholarship.requirements.map((req, idx) => (
+                        <li key={idx}>{req}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
                 {match && (
                   <div className="pt-2 border-t border-slate-200/50">
@@ -427,7 +440,10 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
         ) : (
           <div className="space-y-4">
             {!applicationStatus ? (
-              <button
+              <a
+                href={scholarship.link}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={(e) => {
                   e.stopPropagation();
                   onApply?.(scholarship.id);
@@ -435,7 +451,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
                 className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-sm font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-200 group/btn"
               >
                 Apply Now <ExternalLink size={18} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </button>
+              </a>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 <a

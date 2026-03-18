@@ -1,30 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, LogIn, Phone } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, LogIn, Phone, Eye, EyeOff } from 'lucide-react';
 import { User } from '../types';
+import { Logo } from './Logo';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AuthProps {
   onLogin: (user: User) => void;
 }
 
-const Logo = () => (
-  <div className="flex items-center gap-3">
-    <div className="relative w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-100 overflow-hidden group">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-violet-600 opacity-10 group-hover:opacity-20 transition-opacity" />
-      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-indigo-600 relative z-10 transform group-hover:scale-110 transition-transform duration-300">
-        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-    <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
-      Meritas
-    </span>
-  </div>
-);
-
 export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
-  const [isLogin, setIsLogin] = useState(true);
+  const { t, language, setLanguage } = useLanguage();
+  const [isLogin, setIsLogin] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetVerifying, setIsResetVerifying] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
@@ -39,6 +26,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -190,6 +180,17 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-[#F8FAFC] relative overflow-hidden">
+      <div className="absolute top-6 right-6 z-50">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as any)}
+          className="bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <option value="en">EN</option>
+          <option value="hi">HI</option>
+          <option value="or">OR</option>
+        </select>
+      </div>
       {/* Decorative Background */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/20 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-rose-200/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
@@ -200,11 +201,11 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         className="w-full max-w-[480px] bg-white/90 backdrop-blur-2xl rounded-[3rem] p-10 shadow-2xl shadow-indigo-100/50 border border-white relative z-10"
       >
         <div className="flex justify-center mb-8">
-          <Logo />
+          <Logo size={64} showText={true} />
         </div>
         <div className="text-center mb-10">
           <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-3">
-            {isVerifying || isResetVerifying ? 'Verification' : isResetMode ? 'New Password' : isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Get Started'}
+            {isVerifying || isResetVerifying ? 'Verification' : isResetMode ? 'New Password' : isForgotPassword ? 'Reset Password' : isLogin ? t('auth.welcome') : t('auth.create')}
           </h2>
           <p className="text-slate-500 font-medium">
             {isVerifying || isResetVerifying
@@ -215,7 +216,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   ? 'Enter your email to receive a reset code' 
                   : isLogin 
                     ? 'Sign in to access your scholarship matches' 
-                    : 'Join Meritas to find your funding'}
+                    : 'Join MeritUs to find your funding'}
           </p>
         </div>
 
@@ -224,7 +225,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-sm group disabled:opacity-50"
+              className="w-full py-4 bg-gradient-to-r from-[#4285F4] to-[#34A853] hover:from-[#3367D6] hover:to-[#2b8a44] text-white font-black tracking-wide rounded-2xl transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg group disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -327,7 +328,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   className="space-y-4 overflow-hidden"
                 >
                   <div className="space-y-1">
-                    <label className={labelClasses}>Full Name</label>
+                    <label className={labelClasses}>{t('auth.name')}</label>
                     <div className="relative group">
                       <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                       <input
@@ -342,7 +343,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className={labelClasses}>Phone Number</label>
+                    <label className={labelClasses}>{t('auth.phone')}</label>
                     <div className="relative group">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                       <input
@@ -361,7 +362,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
             {!isResetMode && (
               <div className="space-y-1">
-                <label className={labelClasses}>Email Address</label>
+                <label className={labelClasses}>{t('auth.email')}</label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                   <input
@@ -385,12 +386,24 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                     <input
                       required
-                      type="password"
+                      type={showNewPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className={inputClasses}
+                      className={`${inputClasses} pr-12`}
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onMouseDown={() => setShowNewPassword(true)}
+                      onMouseUp={() => setShowNewPassword(false)}
+                      onMouseLeave={() => setShowNewPassword(false)}
+                      onTouchStart={() => setShowNewPassword(true)}
+                      onTouchEnd={() => setShowNewPassword(false)}
+                      onTouchCancel={() => setShowNewPassword(false)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+                    >
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -399,12 +412,24 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                     <input
                       required
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={inputClasses}
+                      className={`${inputClasses} pr-12`}
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onMouseDown={() => setShowConfirmPassword(true)}
+                      onMouseUp={() => setShowConfirmPassword(false)}
+                      onMouseLeave={() => setShowConfirmPassword(false)}
+                      onTouchStart={() => setShowConfirmPassword(true)}
+                      onTouchEnd={() => setShowConfirmPassword(false)}
+                      onTouchCancel={() => setShowConfirmPassword(false)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
                 </div>
               </>
@@ -413,7 +438,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             {!isForgotPassword && !isResetMode && (
               <div className="space-y-1">
                 <div className="flex justify-between items-center px-1">
-                  <label className={labelClasses}>Password</label>
+                  <label className={labelClasses}>{t('auth.password')}</label>
                   {isLogin && (
                     <button
                       type="button"
@@ -428,12 +453,24 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" size={20} />
                   <input
                     required
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={inputClasses}
+                    className={`${inputClasses} pr-12`}
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onMouseDown={() => setShowPassword(true)}
+                    onMouseUp={() => setShowPassword(false)}
+                    onMouseLeave={() => setShowPassword(false)}
+                    onTouchStart={() => setShowPassword(true)}
+                    onTouchEnd={() => setShowPassword(false)}
+                    onTouchCancel={() => setShowPassword(false)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
             )}
@@ -453,7 +490,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               disabled={loading}
               className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 text-sm uppercase tracking-widest group disabled:opacity-50"
             >
-              {loading ? 'Processing...' : isResetMode ? 'Reset Password' : isForgotPassword ? 'Send Reset Code' : isLogin ? 'Welcome' : 'Create Account'}
+              {loading ? 'Processing...' : isResetMode ? 'Reset Password' : isForgotPassword ? 'Send Reset Code' : isLogin ? t('auth.signin') : t('auth.create')}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
             
@@ -485,7 +522,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               }}
               className="ml-2 text-indigo-600 font-black hover:text-indigo-800 transition-colors uppercase tracking-widest text-[10px]"
             >
-              {isLogin ? 'Sign Up' : 'Sign In'}
+              {isLogin ? t('auth.signup') : t('auth.signin')}
             </button>
           </p>
         </div>

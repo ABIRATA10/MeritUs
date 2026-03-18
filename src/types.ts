@@ -48,6 +48,7 @@ export interface Scholarship {
   minGpa?: number;
   location?: string; // Specific location if applicable
   type?: 'Merit-based' | 'Need-based' | 'Other';
+  requirements?: string[]; // Things required for applying
 }
 
 export interface MatchResult {
