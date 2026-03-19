@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './components/Logo';
 import { useLanguage } from './contexts/LanguageContext';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export default function App() {
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(() => {
     const saved = localStorage.getItem('scholar_current_user');
@@ -129,7 +131,7 @@ export default function App() {
   // Fetch reminders
   React.useEffect(() => {
     if (currentUser) {
-      fetch(`/api/reminders/${currentUser.id}`)
+      fetch(`${API_URL}/api/reminders/${currentUser.id}`)
         .then(res => res.json())
         .then(data => setReminders(data))
         .catch(err => console.error("Failed to fetch reminders", err));
@@ -152,7 +154,7 @@ export default function App() {
           }));
 
           // Mark as triggered in DB
-          fetch(`/api/reminders/${reminder.id}/trigger`, { method: 'POST' })
+          fetch(`${API_URL}/api/reminders/${reminder.id}/trigger`, { method: 'POST' })
             .catch(err => console.error("Failed to trigger reminder", err));
 
           // Update local state
@@ -310,7 +312,7 @@ export default function App() {
     if (!currentUser) return;
     
     try {
-      const response = await fetch('/api/reminders', {
+      const response = await fetch(`${API_URL}/api/reminders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -466,53 +468,95 @@ export default function App() {
         {/* Mobile Menu Overlay */}
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white border-b border-slate-100 overflow-hidden"
-            >
-              <div className="p-4 space-y-2">
-                <button 
-                  onClick={() => { setView(view === 'Dashboard' ? 'Results' : 'Dashboard'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                    view === 'Dashboard' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-900'
-                  }`}
-                >
-                  <LayoutDashboard size={16} /> {view === 'Dashboard' ? 'Back to Results' : 'Dashboard'}
-                </button>
-                <button 
-                  onClick={() => { setView(view === 'Applications' ? 'Results' : 'Applications'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                    view === 'Applications' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-900'
-                  }`}
-                >
-                  <BookmarkCheck size={16} /> {view === 'Applications' ? 'Back to Results' : 'My Applications'}
-                </button>
-                <button 
-                  onClick={() => { setView(view === 'Saved' ? 'Results' : 'Saved'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                    view === 'Saved' ? 'bg-rose-600 text-white' : 'bg-slate-50 text-slate-900'
-                  }`}
-                >
-                  <Heart size={16} className={savedIds.length > 0 ? "fill-current" : ""} /> {view === 'Saved' ? 'Back to Results' : 'Saved'}
-                </button>
-                <button 
-                  onClick={() => { setView(view === 'Profile' ? 'Results' : 'Profile'); setIsMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                    view === 'Profile' ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-900'
-                  }`}
-                >
-                  <User size={16} /> {view === 'Profile' ? 'Back to Results' : 'My Profile'}
-                </button>
-                <button 
-                  onClick={() => { setShowLogoutConfirm(true); setIsMenuOpen(false); }}
-                  className="w-full flex items-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
-                >
-                  <LogOut size={16} /> Logout
-                </button>
-              </div>
-            </motion.div>
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+              />
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-sm bg-white z-50 lg:hidden flex flex-col shadow-2xl border-l border-slate-100"
+              >
+                <div className="p-6 flex items-center justify-between border-b border-slate-100">
+                  <Logo size={32} showText={true} />
+                  <button 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-2.5 bg-slate-50 text-slate-900 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-2">Navigation</p>
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => { setView('Results'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'Results' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <Search size={18} /> Find Scholarships
+                      </button>
+                      <button 
+                        onClick={() => { setView('Dashboard'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'Dashboard' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <LayoutDashboard size={18} /> Dashboard
+                      </button>
+                      <button 
+                        onClick={() => { setView('Applications'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'Applications' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <BookmarkCheck size={18} /> My Applications
+                      </button>
+                      <button 
+                        onClick={() => { setView('Saved'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'Saved' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <Heart size={18} className={savedIds.length > 0 ? "fill-current" : ""} /> Saved
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-2">Account</p>
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => { setView('Profile'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'Profile' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <User size={18} /> My Profile
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 border-t border-slate-100 bg-slate-50">
+                  <button 
+                    onClick={() => { setShowLogoutConfirm(true); setIsMenuOpen(false); }}
+                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-sm"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </nav>
