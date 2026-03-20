@@ -1,9 +1,14 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+if (!process.env.DATABASE_URL) {
+  console.error("CRITICAL: DATABASE_URL environment variable is missing.");
+  process.exit(1);
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ...(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') ? { ssl: { rejectUnauthorized: false } } : {})
 });
 
 async function run() {

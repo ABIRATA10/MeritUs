@@ -42,12 +42,21 @@ const sendEmail = async (to: string, subject: string, text: string) => {
 };
 
 // Database setup
+if (!process.env.DATABASE_URL) {
+  console.error("CRITICAL: DATABASE_URL environment variable is missing.");
+  console.error("Please add your PostgreSQL connection string as a Secret named DATABASE_URL.");
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL || "postgres://localhost:5432/dummy",
+  ...(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') ? { ssl: { rejectUnauthorized: false } } : {})
 });
 
 const initDb = async () => {
+  if (!process.env.DATABASE_URL) {
+    console.error("Skipping database initialization: DATABASE_URL is not set.");
+    return;
+  }
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
