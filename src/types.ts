@@ -30,6 +30,7 @@ export interface UserProfile {
   profileDeadline?: string;
   languagesSpoken?: string;
   volunteerExperience?: string;
+  search_scope?: 'India' | 'International' | 'Both';
 }
 
 export interface Scholarship {
@@ -49,6 +50,8 @@ export interface Scholarship {
   location?: string; // Specific location if applicable
   type?: 'Merit-based' | 'Need-based' | 'Other';
   requirements?: string[]; // Things required for applying
+  fullyFunded?: boolean;
+  genderSpecific?: string;
 }
 
 export interface MatchResult {

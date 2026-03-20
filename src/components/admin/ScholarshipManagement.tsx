@@ -125,7 +125,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 name="name" 
                 defaultValue={defaultValues.name} 
                 required 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -134,7 +134,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 name="provider" 
                 defaultValue={defaultValues.provider} 
                 required 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -144,7 +144,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 type="number"
                 defaultValue={defaultValues.amount_per_year} 
                 required 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -154,7 +154,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 type="date"
                 defaultValue={defaultValues.deadline} 
                 required 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -162,7 +162,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
               <input 
                 name="eligible_categories" 
                 defaultValue={JSON.stringify(defaultValues.eligible_categories || [])} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -170,7 +170,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
               <input 
                 name="eligible_states" 
                 defaultValue={JSON.stringify(defaultValues.eligible_states || [])} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -178,7 +178,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
               <input 
                 name="eligible_courses" 
                 defaultValue={JSON.stringify(defaultValues.eligible_courses || [])} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -187,7 +187,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 name="max_family_income" 
                 type="number"
                 defaultValue={defaultValues.max_family_income} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div>
@@ -195,7 +195,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
               <select 
                 name="gender" 
                 defaultValue={defaultValues.gender || 'All'} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               >
                 <option value="All">All</option>
                 <option value="Female">Female</option>
@@ -210,7 +210,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 type="number"
                 step="0.1"
                 defaultValue={defaultValues.min_percentage} 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
             <div className="flex items-center gap-2 mt-8">
@@ -219,7 +219,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 type="checkbox"
                 id="disability_required"
                 defaultChecked={defaultValues.disability_required} 
-                className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
               />
               <label htmlFor="disability_required" className="text-sm font-bold text-slate-700">Disability Required</label>
             </div>
@@ -232,7 +232,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
               defaultValue={defaultValues.description} 
               required 
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
           </div>
 
@@ -246,7 +246,7 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
             </button>
             <button 
               type="submit"
-              className="px-6 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               Save Scholarship
             </button>
@@ -270,14 +270,14 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
             placeholder="Search scholarships..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           />
         </div>
         <button 
           onClick={() => setIsCreating(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
         >
-          <Plus size={18} /> Add New
+          <Plus size={18} /> Add Scholarship
         </button>
       </div>
 
@@ -287,9 +287,9 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">Name</th>
-                <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">Provider</th>
-                <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">Amount</th>
+                <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">Category</th>
                 <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">Deadline</th>
+                <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider">State</th>
                 <th className="p-4 font-bold text-slate-600 text-sm uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
@@ -306,13 +306,29 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
                 filteredScholarships.map((scholarship) => (
                   <tr key={scholarship.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="p-4 font-bold text-slate-900">{scholarship.name}</td>
-                    <td className="p-4 text-slate-600">{scholarship.provider}</td>
-                    <td className="p-4 text-slate-600 font-medium">₹{scholarship.amount_per_year.toLocaleString()}</td>
+                    <td className="p-4 text-slate-600">
+                      {(() => {
+                        try {
+                          return scholarship.eligible_categories ? JSON.parse(scholarship.eligible_categories).join(', ') : 'All';
+                        } catch (e) {
+                          return scholarship.eligible_categories || 'All';
+                        }
+                      })()}
+                    </td>
                     <td className="p-4 text-slate-600">{new Date(scholarship.deadline).toLocaleDateString()}</td>
+                    <td className="p-4 text-slate-600">
+                      {(() => {
+                        try {
+                          return scholarship.eligible_states ? JSON.parse(scholarship.eligible_states).join(', ') : 'All';
+                        } catch (e) {
+                          return scholarship.eligible_states || 'All';
+                        }
+                      })()}
+                    </td>
                     <td className="p-4 text-right space-x-2">
                       <button 
                         onClick={() => setIsEditing(scholarship)}
-                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
                         <Edit2 size={18} />
                       </button>

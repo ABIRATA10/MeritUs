@@ -47,7 +47,7 @@ export const ApplicationAssistant: React.FC<ApplicationAssistantProps> = ({ prof
         >
           <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ClipboardCheck size={20} className="text-indigo-400" />
+              <ClipboardCheck size={20} className="text-blue-400" />
               <span className="font-black uppercase tracking-widest text-xs">Auto-Fill Assistant</span>
             </div>
             <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
@@ -72,10 +72,10 @@ export const ApplicationAssistant: React.FC<ApplicationAssistantProps> = ({ prof
                 </div>
                 <button
                   onClick={() => copyToClipboard(field.value.toString(), field.label)}
-                  className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-xl transition-all text-left"
+                  className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-blue-50 border border-slate-100 hover:border-blue-200 rounded-xl transition-all text-left"
                 >
                   <span className="text-sm font-bold text-slate-700 truncate mr-2">{field.value}</span>
-                  <Copy size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors shrink-0" />
+                  <Copy size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors shrink-0" />
                 </button>
               </div>
             ))}
@@ -86,7 +86,7 @@ export const ApplicationAssistant: React.FC<ApplicationAssistantProps> = ({ prof
                   const summary = fields.map(f => `${f.label}: ${f.value}`).join('\n');
                   copyToClipboard(summary, 'Full Summary');
                 }}
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest"
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest"
               >
                 {copiedField === 'Full Summary' ? <Check size={16} /> : <Copy size={16} />}
                 Copy Full Profile Summary

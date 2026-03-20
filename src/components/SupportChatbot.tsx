@@ -178,13 +178,13 @@ export const SupportChatbot: React.FC<SupportChatbotProps> = ({ user }) => {
                 >
                   <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-white text-white'
+                      msg.role === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-white text-white'
                     }`}>
                       {msg.role === 'user' ? <User size={16} /> : <ZigIcon size={20} />}
                     </div>
                     <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user' 
-                        ? 'bg-indigo-600 text-white rounded-tr-none' 
+                        ? 'bg-blue-600 text-white rounded-tr-none' 
                         : 'bg-white text-slate-700 border border-slate-100 shadow-sm rounded-tl-none'
                     }`}>
                       <div className="markdown-body">
@@ -206,7 +206,7 @@ export const SupportChatbot: React.FC<SupportChatbotProps> = ({ user }) => {
                       <ZigIcon size={20} />
                     </div>
                     <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm">
-                      <Loader2 className="animate-spin text-indigo-500" size={18} />
+                      <Loader2 className="animate-spin text-blue-500" size={18} />
                     </div>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export const SupportChatbot: React.FC<SupportChatbotProps> = ({ user }) => {
                 <button
                   key={action.label}
                   onClick={() => setInput(action.label)}
-                  className="whitespace-nowrap px-3 py-1.5 bg-slate-50 hover:bg-indigo-50 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 rounded-lg border border-slate-100 transition-colors flex items-center gap-1.5"
+                  className="whitespace-nowrap px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 rounded-lg border border-slate-100 transition-colors flex items-center gap-1.5"
                 >
                   {action.icon} {action.label}
                 </button>
@@ -241,12 +241,12 @@ export const SupportChatbot: React.FC<SupportChatbotProps> = ({ user }) => {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask for support..."
-                  className="w-full pl-6 pr-14 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all text-sm font-medium"
+                  className="w-full pl-6 pr-14 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all text-sm font-medium"
                 />
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-100"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-100"
                 >
                   <Send size={18} />
                 </button>

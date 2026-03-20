@@ -101,7 +101,7 @@ export const NotificationManager: React.FC = () => {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`p-2.5 rounded-xl transition-all relative ${
-            isOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+            isOpen ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
           }`}
         >
           {permission === 'denied' ? <BellOff size={20} /> : <Bell size={20} />}
@@ -122,21 +122,21 @@ export const NotificationManager: React.FC = () => {
             >
               <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bell size={18} className="text-indigo-400" />
+                  <Bell size={18} className="text-blue-400" />
                   <span className="font-black uppercase tracking-widest text-xs">Notifications</span>
                 </div>
-                <button onClick={markAllAsRead} className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors">
+                <button onClick={markAllAsRead} className="text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors">
                   Mark all read
                 </button>
               </div>
 
               <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                 {permission === 'default' && (
-                  <div className="p-6 bg-indigo-50 border-b border-indigo-100">
-                    <p className="text-xs text-indigo-900 font-bold mb-3">Stay updated with real-time scholarship alerts!</p>
+                  <div className="p-6 bg-blue-50 border-b border-blue-100">
+                    <p className="text-xs text-blue-900 font-bold mb-3">Stay updated with real-time scholarship alerts!</p>
                     <button
                       onClick={requestPermission}
-                      className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                      className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
                     >
                       Enable Push Notifications
                     </button>
@@ -152,7 +152,7 @@ export const NotificationManager: React.FC = () => {
                             n.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
                             n.type === 'warning' ? 'bg-rose-50 text-rose-600' :
                             n.type === 'scholarship' ? 'bg-amber-50 text-amber-600' :
-                            'bg-indigo-50 text-indigo-600'
+                            'bg-blue-50 text-blue-600'
                           }`}>
                             {n.type === 'success' ? <CheckCircle2 size={16} /> :
                              n.type === 'warning' ? <AlertTriangle size={16} /> :
@@ -200,7 +200,7 @@ export const NotificationManager: React.FC = () => {
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
               showToast.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
               showToast.type === 'warning' ? 'bg-rose-50 text-rose-600' :
-              'bg-indigo-50 text-indigo-600'
+              'bg-blue-50 text-blue-600'
             }`}>
               <Bell size={20} />
             </div>

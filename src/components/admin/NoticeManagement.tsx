@@ -96,7 +96,7 @@ export const NoticeManagement: React.FC<NoticeManagementProps> = ({ adminEmail }
             <input 
               name="title" 
               required 
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               placeholder="e.g., New Scholarship Available!"
             />
           </div>
@@ -106,7 +106,7 @@ export const NoticeManagement: React.FC<NoticeManagementProps> = ({ adminEmail }
               name="body" 
               required 
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               placeholder="Enter the notice details here..."
             />
           </div>
@@ -121,7 +121,7 @@ export const NoticeManagement: React.FC<NoticeManagementProps> = ({ adminEmail }
             </button>
             <button 
               type="submit"
-              className="px-6 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               Post Notice
             </button>
@@ -140,7 +140,7 @@ export const NoticeManagement: React.FC<NoticeManagementProps> = ({ adminEmail }
       <div className="flex justify-end">
         <button 
           onClick={() => setIsCreating(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
         >
           <Plus size={18} /> New Notice
         </button>

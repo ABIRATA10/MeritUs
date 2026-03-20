@@ -42,9 +42,11 @@ export async function findScholarships(
        - Upcoming scholarships (those opening in the next 6-12 months).
        - Scholarships specifically for the user's gender (${userProfile.gender}), year of study (${userProfile.yearOfStudy}), background, extracurricular activities (${userProfile.extracurriculars || 'None listed'}), awards/honors (${userProfile.awards || 'None listed'}), or field of study.
        - Local opportunities in ${userProfile.country} and ${userProfile.state}. (e.g., if the user is from Odisha, search for e-Medhabruti, KALIA/Krusi Vidya, Gopabandhu Sikhya Sahayata Yojana, etc.)
-       - Global opportunities (USA, UK, Europe, etc.) that accept international students from ${userProfile.country}.
+       ${userProfile.search_scope === 'India' ? '- CRITICAL: The user has selected "India only". DO NOT show any international scholarships. Only show scholarships available in India.' : '- Global opportunities (USA, UK, Europe, etc.) that accept international students from ' + userProfile.country + '.'}
+       ${(userProfile.search_scope === 'International' || userProfile.search_scope === 'Both') ? '- CRITICAL: The user has selected "International" or "Both". Ensure you include a mix of global scholarships.' : ''}
        - If the user has set a profile completion deadline (${userProfile.profileDeadline}), prioritize scholarships with deadlines that align with or follow this date, ensuring the user has enough time to apply after completing their profile.
        - CRITICAL: Leverage richer schema fields from the Database Scholarships to make highly accurate matches. Specifically, check if the user's profile matches the \`eligible_categories\`, \`eligible_states\`, \`eligible_courses\`, \`max_family_income\`, \`gender\`, \`min_percentage\`, and \`disability_required\` fields. For example, if a scholarship has \`max_family_income\` of 250000, and the user's \`incomeBracket\` is "> 8L", DO NOT match them. If a scholarship requires \`disability_required\` = 1, and the user has no disability, DO NOT match them.
+       - CRITICAL RANKING: Rank fully-funded international scholarships higher when the student has 80%+ marks (or equivalent CGPA) and income below ₹8L.
     3. For each scholarship found, provide:
        - A unique ID
        - Title
@@ -60,6 +62,10 @@ export async function findScholarships(
        - Minimum GPA (The minimum GPA required, as a number. Note: The user's CGPA is provided on a 10.0 scale, so ensure this value is compatible, e.g., 7.5)
        - Specific Location (The specific city, state, or country if applicable)
        - Scholarship Type (One of: 'Merit-based', 'Need-based', 'Other')
+       - Region (e.g., Asia, Europe, North America, Global)
+       - Country
+       - Fully Funded (Boolean: true if tuition and living expenses are covered, false otherwise)
+       - Gender Specific (e.g., 'Female', 'Any')
        - A direct application link (MANDATORY: Ensure this link is accurate and active. If a specific application page is not found, provide the provider's official scholarship portal or main website).
        - A match score (0-100)
        - AI reasoning for the match
@@ -98,6 +104,8 @@ export async function findScholarships(
                   minGpa: { type: Type.NUMBER, description: "Minimum GPA required" },
                   location: { type: Type.STRING, description: "Specific location if applicable" },
                   type: { type: Type.STRING, description: "One of: 'Merit-based', 'Need-based', 'Other'" },
+                  fullyFunded: { type: Type.BOOLEAN, description: "True if the scholarship is fully funded" },
+                  genderSpecific: { type: Type.STRING, description: "Gender requirement, e.g., 'Female', 'Any'" },
                 },
                 required: ["id", "title", "provider", "amount", "deadline", "eligibilityCriteria", "description", "category", "link", "scope"],
               },

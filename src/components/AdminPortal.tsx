@@ -88,7 +88,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
       {/* Sidebar */}
       <div className="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-20">
         <div className="p-6 flex items-center gap-3 border-b border-slate-800">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
             <LayoutDashboard size={20} className="text-white" />
           </div>
           <div>
@@ -101,7 +101,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <LayoutDashboard size={18} /> Dashboard
@@ -109,7 +109,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
           <button
             onClick={() => setActiveTab('scholarships')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'scholarships' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              activeTab === 'scholarships' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <GraduationCap size={18} /> Scholarships
@@ -117,7 +117,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
           <button
             onClick={() => setActiveTab('students')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'students' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              activeTab === 'students' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <Users size={18} /> Students
@@ -125,7 +125,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
           <button
             onClick={() => setActiveTab('analytics')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'analytics' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              activeTab === 'analytics' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <BarChart3 size={18} /> Analytics
@@ -133,7 +133,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
           <button
             onClick={() => setActiveTab('notices')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'notices' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              activeTab === 'notices' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <Bell size={18} /> Notices
@@ -160,7 +160,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
       <div className="flex-1 ml-64 p-8">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <AnimatePresence mode="wait">
@@ -180,7 +180,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                         <Users size={24} />
                       </div>
                     </div>
@@ -223,7 +223,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
                       {dashboardData.recentSignups.map((user: any) => (
                         <div key={user.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">
                               {user.name.charAt(0)}
                             </div>
                             <div>
@@ -252,7 +252,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
                             <p className="text-xs text-slate-500 truncate">{scholarship.provider}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-black text-indigo-600">{scholarship.match_count}</p>
+                            <p className="font-black text-blue-600">{scholarship.match_count}</p>
                             <p className="text-[10px] font-bold text-slate-400 uppercase">Matches</p>
                           </div>
                         </div>

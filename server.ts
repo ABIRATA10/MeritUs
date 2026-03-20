@@ -2,7 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
-import Database from "better-sqlite3";
+import { Pool } from "pg";
 import path from "path";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -42,141 +42,149 @@ const sendEmail = async (to: string, subject: string, text: string) => {
 };
 
 // Database setup
-const db = new Database("database.sqlite");
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-try { db.exec("ALTER TABLE users ADD COLUMN password_hash TEXT"); } catch (e) {}
-try { db.exec("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'email'"); } catch (e) {}
+const initDb = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE,
+        password TEXT,
+        fullName TEXT,
+        phoneNumber TEXT,
+        resetCode TEXT,
+        resetCodeExpires BIGINT,
+        password_hash TEXT,
+        auth_provider TEXT DEFAULT 'email'
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    email TEXT UNIQUE,
-    password TEXT,
-    fullName TEXT,
-    phoneNumber TEXT,
-    resetCode TEXT,
-    resetCodeExpires INTEGER,
-    password_hash TEXT,
-    auth_provider TEXT DEFAULT 'email'
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        user_id TEXT PRIMARY KEY,
+        fullName TEXT,
+        profileImageUrl TEXT,
+        phoneNumber TEXT,
+        age INTEGER,
+        gender TEXT,
+        educationLevel TEXT,
+        yearOfStudy TEXT,
+        institution TEXT,
+        fieldOfStudy TEXT,
+        gpa TEXT,
+        country TEXT,
+        state TEXT,
+        pincode TEXT,
+        address TEXT,
+        caste TEXT,
+        incomeBracket TEXT,
+        background TEXT,
+        careerGoals TEXT,
+        extracurriculars TEXT,
+        awards TEXT,
+        profileDeadline TEXT,
+        languagesSpoken TEXT,
+        volunteerExperience TEXT,
+        profile_completion_percentage INTEGER DEFAULT 0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+      )
+    `);
 
-db.exec(`DROP TABLE IF EXISTS user_profiles`);
-db.exec(`
-  CREATE TABLE IF NOT EXISTS user_profiles (
-    user_id TEXT PRIMARY KEY,
-    fullName TEXT,
-    profileImageUrl TEXT,
-    phoneNumber TEXT,
-    age INTEGER,
-    gender TEXT,
-    educationLevel TEXT,
-    yearOfStudy TEXT,
-    institution TEXT,
-    fieldOfStudy TEXT,
-    gpa TEXT,
-    country TEXT,
-    state TEXT,
-    pincode TEXT,
-    address TEXT,
-    caste TEXT,
-    incomeBracket TEXT,
-    background TEXT,
-    careerGoals TEXT,
-    extracurriculars TEXT,
-    awards TEXT,
-    profileDeadline TEXT,
-    languagesSpoken TEXT,
-    volunteerExperience TEXT,
-    profile_completion_percentage INTEGER DEFAULT 0,
-    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS scholarships (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        provider TEXT,
+        amount_per_year INTEGER,
+        eligible_categories TEXT,
+        eligible_states TEXT,
+        eligible_courses TEXT,
+        max_family_income INTEGER,
+        gender TEXT,
+        min_percentage INTEGER,
+        disability_required INTEGER,
+        is_active INTEGER DEFAULT 1,
+        application_portal_url TEXT,
+        deadline_month TEXT,
+        description TEXT
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS scholarships (
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    provider TEXT,
-    amount_per_year INTEGER,
-    eligible_categories TEXT,
-    eligible_states TEXT,
-    eligible_courses TEXT,
-    max_family_income INTEGER,
-    gender TEXT,
-    min_percentage INTEGER,
-    disability_required INTEGER,
-    is_active INTEGER DEFAULT 1,
-    application_portal_url TEXT,
-    deadline_month TEXT,
-    description TEXT
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bookmarks (
+        user_id TEXT,
+        scholarship_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, scholarship_id),
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(scholarship_id) REFERENCES scholarships(id)
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS bookmarks (
-    user_id TEXT,
-    scholarship_id TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, scholarship_id),
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(scholarship_id) REFERENCES scholarships(id)
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS applications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        scholarship_id TEXT,
+        status TEXT,
+        applied_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(scholarship_id) REFERENCES scholarships(id)
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS applications (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    scholarship_id TEXT,
-    status TEXT,
-    applied_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(scholarship_id) REFERENCES scholarships(id)
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notices (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        body TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS notices (
-    id TEXT PRIMARY KEY,
-    title TEXT,
-    body TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        token TEXT,
+        expires_at BIGINT,
+        used INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS password_reset_tokens (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    token TEXT,
-    expires_at INTEGER,
-    used INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS verification_codes (
+        email TEXT PRIMARY KEY,
+        code TEXT,
+        expires BIGINT
+      )
+    `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS verification_codes (
-    email TEXT PRIMARY KEY,
-    code TEXT,
-    expires INTEGER
-  )
-`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reminders (
+        id TEXT PRIMARY KEY,
+        userId TEXT,
+        scholarshipId TEXT,
+        scholarshipTitle TEXT,
+        reminderTime TEXT,
+        triggered INTEGER DEFAULT 0,
+        FOREIGN KEY(userId) REFERENCES users(id)
+      )
+    `);
+    console.log("Database initialized successfully");
+  } catch (error) {
+    console.error("Database initialization failed:", error);
+  }
+};
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS reminders (
-    id TEXT PRIMARY KEY,
-    userId TEXT,
-    scholarshipId TEXT,
-    scholarshipTitle TEXT,
-    reminderTime TEXT,
-    triggered INTEGER DEFAULT 0,
-    FOREIGN KEY(userId) REFERENCES users(id)
-  )
-`);
+initDb();
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -200,24 +208,24 @@ const isAdmin = (req: express.Request, res: express.Response, next: express.Next
 };
 
 // Admin routes
-app.get("/api/admin/dashboard", isAdmin, (req, res) => {
+app.get("/api/admin/dashboard", isAdmin, async (req, res) => {
   try {
-    const totalStudents = db.prepare("SELECT COUNT(*) as count FROM users").get() as { count: number };
-    const totalScholarships = db.prepare("SELECT COUNT(*) as count FROM scholarships").get() as { count: number };
-    const totalBookmarks = db.prepare("SELECT COUNT(*) as count FROM bookmarks").get() as { count: number };
-    const totalApplications = db.prepare("SELECT COUNT(*) as count FROM applications").get() as { count: number };
+    const totalStudents = (await pool.query("SELECT COUNT(*) as count FROM users")).rows[0] as { count: number };
+    const totalScholarships = (await pool.query("SELECT COUNT(*) as count FROM scholarships")).rows[0] as { count: number };
+    const totalBookmarks = (await pool.query("SELECT COUNT(*) as count FROM bookmarks")).rows[0] as { count: number };
+    const totalApplications = (await pool.query("SELECT COUNT(*) as count FROM applications")).rows[0] as { count: number };
     
-    const recentSignups = db.prepare("SELECT fullName as name, email, 'N/A' as joined_date FROM users ORDER BY rowid DESC LIMIT 5").all();
+    const recentSignups = (await pool.query("SELECT fullName as name, email, 'N/A' as joined_date FROM users ORDER BY id DESC LIMIT 5")).rows;
     
     // Top 5 most matched scholarships (using bookmarks as proxy for matches for now)
-    const topScholarships = db.prepare(`
+    const topScholarships = (await pool.query(`
       SELECT s.name, COUNT(b.scholarship_id) as match_count 
       FROM scholarships s 
       LEFT JOIN bookmarks b ON s.id = b.scholarship_id 
       GROUP BY s.id 
       ORDER BY match_count DESC 
       LIMIT 5
-    `).all();
+    `)).rows;
 
     res.json({
       totalStudents: totalStudents.count,
@@ -232,102 +240,102 @@ app.get("/api/admin/dashboard", isAdmin, (req, res) => {
   }
 });
 
-app.get("/api/admin/scholarships", isAdmin, (req, res) => {
+app.get("/api/admin/scholarships", isAdmin, async (req, res) => {
   try {
-    const scholarships = db.prepare("SELECT * FROM scholarships ORDER BY name ASC").all();
+    const scholarships = (await pool.query("SELECT * FROM scholarships ORDER BY name ASC")).rows;
     res.json(scholarships);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch scholarships" });
   }
 });
 
-app.post("/api/admin/scholarships", isAdmin, (req, res) => {
+app.post("/api/admin/scholarships", isAdmin, async (req, res) => {
   const s = req.body;
   const id = Math.random().toString(36).substr(2, 9);
   try {
-    db.prepare(`
+    await pool.query(`
       INSERT INTO scholarships (
         id, name, provider, amount_per_year, eligible_categories, eligible_states, 
         eligible_courses, max_family_income, gender, min_percentage, disability_required, 
         is_active, application_portal_url, deadline_month, description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `, [
       id, s.name, s.provider, s.amount_per_year, s.eligible_categories, s.eligible_states,
       s.eligible_courses, s.max_family_income, s.gender, s.min_percentage, s.disability_required ? 1 : 0,
       s.is_active ? 1 : 0, s.application_portal_url, s.deadline_month, s.description
-    );
+    ]);
     res.json({ id, ...s });
   } catch (error) {
     res.status(500).json({ error: "Failed to add scholarship" });
   }
 });
 
-app.put("/api/admin/scholarships/:id", isAdmin, (req, res) => {
+app.put("/api/admin/scholarships/:id", isAdmin, async (req, res) => {
   const s = req.body;
   try {
-    db.prepare(`
+    await pool.query(`
       UPDATE scholarships SET 
-        name = ?, provider = ?, amount_per_year = ?, eligible_categories = ?, eligible_states = ?, 
-        eligible_courses = ?, max_family_income = ?, gender = ?, min_percentage = ?, disability_required = ?, 
-        is_active = ?, application_portal_url = ?, deadline_month = ?, description = ?
-      WHERE id = ?
-    `).run(
+        name = $1, provider = $2, amount_per_year = $3, eligible_categories = $4, eligible_states = $5, 
+        eligible_courses = $6, max_family_income = $7, gender = $8, min_percentage = $9, disability_required = $10, 
+        is_active = $11, application_portal_url = $12, deadline_month = $13, description = $14
+      WHERE id = $15
+    `, [
       s.name, s.provider, s.amount_per_year, s.eligible_categories, s.eligible_states,
       s.eligible_courses, s.max_family_income, s.gender, s.min_percentage, s.disability_required ? 1 : 0,
       s.is_active ? 1 : 0, s.application_portal_url, s.deadline_month, s.description, req.params.id
-    );
+    ]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to update scholarship" });
   }
 });
 
-app.delete("/api/admin/scholarships/:id", isAdmin, (req, res) => {
+app.delete("/api/admin/scholarships/:id", isAdmin, async (req, res) => {
   try {
-    db.prepare("DELETE FROM scholarships WHERE id = ?").run(req.params.id);
+    await pool.query("DELETE FROM scholarships WHERE id = $1", [req.params.id]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete scholarship" });
   }
 });
 
-app.get("/api/admin/students", isAdmin, (req, res) => {
+app.get("/api/admin/students", isAdmin, async (req, res) => {
   try {
-    const students = db.prepare(`
+    const students = (await pool.query(`
       SELECT u.id, u.fullName as name, u.email, 
              COALESCE(p.profile_completion_percentage, 0) as completion,
              'N/A' as joined_date, 'N/A' as last_login
       FROM users u
       LEFT JOIN user_profiles p ON u.id = p.user_id
-    `).all();
+    `)).rows;
     res.json(students);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch students" });
   }
 });
 
-app.delete("/api/admin/students/:id", isAdmin, (req, res) => {
+app.delete("/api/admin/students/:id", isAdmin, async (req, res) => {
   try {
-    db.prepare("DELETE FROM users WHERE id = ?").run(req.params.id);
-    db.prepare("DELETE FROM user_profiles WHERE user_id = ?").run(req.params.id);
+    await pool.query("DELETE FROM user_profiles WHERE user_id = $1", [req.params.id]);
+    await pool.query("DELETE FROM users WHERE id = $1", [req.params.id]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete student" });
   }
 });
 
-app.get("/api/admin/analytics", isAdmin, (req, res) => {
+app.get("/api/admin/analytics", isAdmin, async (req, res) => {
   try {
-    const byCategory = db.prepare("SELECT provider as name, COUNT(*) as value FROM scholarships GROUP BY provider").all();
-    const topMatched = db.prepare(`
+    const byCategory = (await pool.query("SELECT provider as name, COUNT(*) as value FROM scholarships GROUP BY provider")).rows;
+    const topMatched = (await pool.query(`
       SELECT s.name, COUNT(b.scholarship_id) as value 
       FROM scholarships s 
       LEFT JOIN bookmarks b ON s.id = b.scholarship_id 
       GROUP BY s.id 
       ORDER BY value DESC 
       LIMIT 10
-    `).all();
-    const userDistribution = db.prepare("SELECT state as name, COUNT(*) as value FROM user_profiles GROUP BY state").all();
+    `)).rows;
+    const userDistribution = (await pool.query("SELECT state as name, COUNT(*) as value FROM user_profiles GROUP BY state")).rows;
     
     res.json({ byCategory, topMatched, userDistribution });
   } catch (error) {
@@ -335,20 +343,20 @@ app.get("/api/admin/analytics", isAdmin, (req, res) => {
   }
 });
 
-app.get("/api/admin/notices", isAdmin, (req, res) => {
+app.get("/api/admin/notices", isAdmin, async (req, res) => {
   try {
-    const notices = db.prepare("SELECT * FROM notices ORDER BY date DESC").all();
+    const notices = (await pool.query("SELECT * FROM notices ORDER BY date DESC")).rows;
     res.json(notices);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch notices" });
   }
 });
 
-app.post("/api/admin/notices", isAdmin, (req, res) => {
+app.post("/api/admin/notices", isAdmin, async (req, res) => {
   const { title, body } = req.body;
   const id = Math.random().toString(36).substr(2, 9);
   try {
-    db.prepare("INSERT INTO notices (id, title, body) VALUES (?, ?, ?)").run(id, title, body);
+    await pool.query("INSERT INTO notices (id, title, body) VALUES ($1, $2, $3)", [id, title, body]);
     res.json({ id, title, body });
   } catch (error) {
     res.status(500).json({ error: "Failed to add notice" });
@@ -356,31 +364,36 @@ app.post("/api/admin/notices", isAdmin, (req, res) => {
 });
 
 // Profile routes
-app.get("/api/profile/:userId", (req, res) => {
+app.get("/api/profile/:userId", async (req, res) => {
   try {
-    const profile = db.prepare("SELECT * FROM user_profiles WHERE user_id = ?").get(req.params.userId);
+    const profile = (await pool.query("SELECT * FROM user_profiles WHERE user_id = $1", [req.params.userId])).rows[0];
     res.json(profile || null);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch profile" });
   }
 });
 
-app.post("/api/profile/:userId", (req, res) => {
+app.post("/api/profile/:userId", async (req, res) => {
   const p = req.body;
   try {
-    db.prepare(`
-      INSERT OR REPLACE INTO user_profiles (
+    await pool.query(`
+      INSERT INTO user_profiles (
         user_id, fullName, profileImageUrl, phoneNumber, age, gender, educationLevel, yearOfStudy,
         institution, fieldOfStudy, gpa, country, state, pincode, address, caste, incomeBracket,
         background, careerGoals, extracurriculars, awards, profileDeadline, languagesSpoken, volunteerExperience,
         profile_completion_percentage, last_updated
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, CURRENT_TIMESTAMP)
+      ON CONFLICT (user_id) DO UPDATE SET
+        fullName = EXCLUDED.fullName, profileImageUrl = EXCLUDED.profileImageUrl, phoneNumber = EXCLUDED.phoneNumber, age = EXCLUDED.age, gender = EXCLUDED.gender, educationLevel = EXCLUDED.educationLevel, yearOfStudy = EXCLUDED.yearOfStudy,
+        institution = EXCLUDED.institution, fieldOfStudy = EXCLUDED.fieldOfStudy, gpa = EXCLUDED.gpa, country = EXCLUDED.country, state = EXCLUDED.state, pincode = EXCLUDED.pincode, address = EXCLUDED.address, caste = EXCLUDED.caste, incomeBracket = EXCLUDED.incomeBracket,
+        background = EXCLUDED.background, careerGoals = EXCLUDED.careerGoals, extracurriculars = EXCLUDED.extracurriculars, awards = EXCLUDED.awards, profileDeadline = EXCLUDED.profileDeadline, languagesSpoken = EXCLUDED.languagesSpoken, volunteerExperience = EXCLUDED.volunteerExperience,
+        profile_completion_percentage = EXCLUDED.profile_completion_percentage, last_updated = CURRENT_TIMESTAMP
+    `, [
       req.params.userId, p.fullName, p.profileImageUrl, p.phoneNumber, p.age, p.gender, p.educationLevel, p.yearOfStudy,
       p.institution, p.fieldOfStudy, p.gpa, p.country, p.state, p.pincode, p.address, p.caste, p.incomeBracket,
       p.background, p.careerGoals, p.extracurriculars, p.awards, p.profileDeadline, p.languagesSpoken, p.volunteerExperience,
       p.profile_completion_percentage || 0
-    );
+    ]);
     res.json({ success: true });
   } catch (error) {
     console.error("Failed to save profile:", error);
@@ -389,9 +402,9 @@ app.post("/api/profile/:userId", (req, res) => {
 });
 
 // Notices for users
-app.get("/api/scholarships", (req, res) => {
+app.get("/api/scholarships", async (req, res) => {
   try {
-    const scholarships = db.prepare("SELECT * FROM scholarships").all();
+    const scholarships = (await pool.query("SELECT * FROM scholarships")).rows;
     res.json(scholarships);
   } catch (error) {
     console.error("Failed to fetch scholarships:", error);
@@ -399,9 +412,9 @@ app.get("/api/scholarships", (req, res) => {
   }
 });
 
-app.get("/api/notices", (req, res) => {
+app.get("/api/notices", async (req, res) => {
   try {
-    const notices = db.prepare("SELECT * FROM notices ORDER BY date DESC LIMIT 5").all();
+    const notices = (await pool.query("SELECT * FROM notices ORDER BY date DESC LIMIT 5")).rows;
     res.json(notices);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch notices" });
@@ -413,7 +426,7 @@ app.post("/api/auth/send-verification", async (req, res) => {
   const { email } = req.body;
   
   // Check if user already exists
-  const existingUser = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+  const existingUser = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0];
   if (existingUser) {
     return res.status(400).json({ error: "User already exists" });
   }
@@ -421,8 +434,10 @@ app.post("/api/auth/send-verification", async (req, res) => {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
   
-  db.prepare("INSERT OR REPLACE INTO verification_codes (email, code, expires) VALUES (?, ?, ?)")
-    .run(email, code, expires);
+  await pool.query(`
+    INSERT INTO verification_codes (email, code, expires) VALUES ($1, $2, $3)
+    ON CONFLICT (email) DO UPDATE SET code = EXCLUDED.code, expires = EXCLUDED.expires
+  `, [email, code, expires]);
   
   await sendEmail(
     email,
@@ -437,7 +452,7 @@ app.post("/api/auth/signup", async (req, res) => {
   const { email, password, fullName, phoneNumber, code } = req.body;
   
   // Verify code
-  const verification = db.prepare("SELECT * FROM verification_codes WHERE email = ?").get(email) as any;
+  const verification = (await pool.query("SELECT * FROM verification_codes WHERE email = $1", [email])).rows[0] as any;
   if (!verification || verification.code !== code || verification.expires < Date.now()) {
     return res.status(400).json({ error: "Invalid or expired verification code" });
   }
@@ -451,15 +466,15 @@ app.post("/api/auth/signup", async (req, res) => {
   const password_hash = await bcrypt.hash(password, 12);
   
   try {
-    const stmt = db.prepare("INSERT INTO users (id, email, password_hash, auth_provider, fullName, phoneNumber) VALUES (?, ?, ?, ?, ?, ?)");
-    stmt.run(id, email, password_hash, 'email', fullName, phoneNumber);
+    await pool.query("INSERT INTO users (id, email, password_hash, auth_provider, fullName, phoneNumber) VALUES ($1, $2, $3, $4, $5, $6)", 
+      [id, email, password_hash, 'email', fullName, phoneNumber]);
     
     // Clean up verification code
-    db.prepare("DELETE FROM verification_codes WHERE email = ?").run(email);
+    await pool.query("DELETE FROM verification_codes WHERE email = $1", [email]);
     
     res.json({ id, email, fullName, phoneNumber });
   } catch (error: any) {
-    if (error.message.includes("UNIQUE constraint failed")) {
+    if (error.message.includes("unique constraint")) {
       res.status(400).json({ error: "User already exists" });
     } else {
       res.status(500).json({ error: "Failed to create user" });
@@ -469,7 +484,7 @@ app.post("/api/auth/signup", async (req, res) => {
 
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+  const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
   
   if (user && user.password_hash) {
     const match = await bcrypt.compare(password, user.password_hash);
@@ -477,8 +492,8 @@ app.post("/api/auth/login", async (req, res) => {
       return res.json({
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber
+        fullName: user.fullname,
+        phoneNumber: user.phonenumber
       });
     }
   } else if (user && user.password) {
@@ -487,8 +502,8 @@ app.post("/api/auth/login", async (req, res) => {
       return res.json({
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber
+        fullName: user.fullname,
+        phoneNumber: user.phonenumber
       });
     }
   }
@@ -498,14 +513,14 @@ app.post("/api/auth/login", async (req, res) => {
 
 app.post("/api/auth/forgot-password", async (req, res) => {
   const { email } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+  const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
   
   if (user) {
     const token = crypto.randomBytes(32).toString('hex');
     const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
     const id = Math.random().toString(36).substr(2, 9);
     
-    db.prepare("INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)").run(id, user.id, token, expires);
+    await pool.query("INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES ($1, $2, $3, $4)", [id, user.id, token, expires]);
     
     const resetLink = `${process.env.APP_URL}/reset-password?token=${token}`;
     await sendEmail(
@@ -523,7 +538,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 app.post("/api/auth/reset-password", async (req, res) => {
   const { token, newPassword } = req.body;
   
-  const resetRecord = db.prepare("SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0 AND expires_at > ?").get(token, Date.now()) as any;
+  const resetRecord = (await pool.query("SELECT * FROM password_reset_tokens WHERE token = $1 AND used = 0 AND expires_at > $2", [token, Date.now()])).rows[0] as any;
   
   if (resetRecord) {
     const passValidation = validatePassword(newPassword);
@@ -532,8 +547,8 @@ app.post("/api/auth/reset-password", async (req, res) => {
     }
 
     const password_hash = await bcrypt.hash(newPassword, 12);
-    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(password_hash, resetRecord.user_id);
-    db.prepare("UPDATE password_reset_tokens SET used = 1 WHERE id = ?").run(resetRecord.id);
+    await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [password_hash, resetRecord.user_id]);
+    await pool.query("UPDATE password_reset_tokens SET used = 1 WHERE id = $1", [resetRecord.id]);
     
     res.json({ message: "Password reset successfully" });
   } else {
@@ -565,13 +580,12 @@ app.get("/api/auth/google/url", (req, res) => {
 });
 
 // Reminder endpoints
-app.post("/api/reminders", (req, res) => {
+app.post("/api/reminders", async (req, res) => {
   const { userId, scholarshipId, scholarshipTitle, reminderTime } = req.body;
   const id = Math.random().toString(36).substr(2, 9);
   
   try {
-    const stmt = db.prepare("INSERT INTO reminders (id, userId, scholarshipId, scholarshipTitle, reminderTime) VALUES (?, ?, ?, ?, ?)");
-    stmt.run(id, userId, scholarshipId, scholarshipTitle, reminderTime);
+    await pool.query("INSERT INTO reminders (id, userId, scholarshipId, scholarshipTitle, reminderTime) VALUES ($1, $2, $3, $4, $5)", [id, userId, scholarshipId, scholarshipTitle, reminderTime]);
     res.json({ id, userId, scholarshipId, scholarshipTitle, reminderTime });
   } catch (error) {
     console.error("Failed to save reminder:", error);
@@ -579,10 +593,10 @@ app.post("/api/reminders", (req, res) => {
   }
 });
 
-app.get("/api/reminders/:userId", (req, res) => {
+app.get("/api/reminders/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
-    const reminders = db.prepare("SELECT * FROM reminders WHERE userId = ? AND triggered = 0").all(userId);
+    const reminders = (await pool.query("SELECT * FROM reminders WHERE userId = $1 AND triggered = 0", [userId])).rows;
     res.json(reminders);
   } catch (error) {
     console.error("Failed to fetch reminders:", error);
@@ -590,10 +604,10 @@ app.get("/api/reminders/:userId", (req, res) => {
   }
 });
 
-app.post("/api/reminders/:id/trigger", (req, res) => {
+app.post("/api/reminders/:id/trigger", async (req, res) => {
   const { id } = req.params;
   try {
-    db.prepare("UPDATE reminders SET triggered = 1 WHERE id = ?").run(id);
+    await pool.query("UPDATE reminders SET triggered = 1 WHERE id = $1", [id]);
     res.json({ message: "Reminder marked as triggered" });
   } catch (error) {
     console.error("Failed to update reminder:", error);
@@ -625,13 +639,12 @@ app.get("/auth/google/callback", async (req, res) => {
     const googleUser = userInfo.data as any;
 
     // Persist user to database if they don't exist
-    let dbUser = db.prepare("SELECT * FROM users WHERE email = ?").get(googleUser.email) as any;
+    let dbUser = (await pool.query("SELECT * FROM users WHERE email = $1", [googleUser.email])).rows[0] as any;
     
     if (!dbUser) {
       const id = Math.random().toString(36).substr(2, 9);
-      db.prepare("INSERT INTO users (id, email, fullName, auth_provider) VALUES (?, ?, ?, ?)")
-        .run(id, googleUser.email, googleUser.name, 'google');
-      dbUser = { id, email: googleUser.email, fullName: googleUser.name };
+      await pool.query("INSERT INTO users (id, email, fullname, auth_provider) VALUES ($1, $2, $3, $4)", [id, googleUser.email, googleUser.name, 'google']);
+      dbUser = { id, email: googleUser.email, fullname: googleUser.name };
     }
 
     // Send user back via postMessage to the parent window.
@@ -645,8 +658,8 @@ app.get("/auth/google/callback", async (req, res) => {
                 user: ${JSON.stringify({
                   id: dbUser.id,
                   email: dbUser.email,
-                  fullName: dbUser.fullName,
-                  phoneNumber: dbUser.phoneNumber || ''
+                  fullName: dbUser.fullname,
+                  phoneNumber: dbUser.phonenumber || ''
                 })}
               }, '*');
               window.close();

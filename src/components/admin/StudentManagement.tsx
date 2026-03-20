@@ -88,7 +88,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ adminEmail
             placeholder="Search students..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           />
         </div>
         <button 
@@ -124,7 +124,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ adminEmail
                   <tr key={student.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">
                           {student.name.charAt(0)}
                         </div>
                         <span className="font-bold text-slate-900">{student.name}</span>
@@ -135,7 +135,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ adminEmail
                       <div className="flex items-center gap-3">
                         <div className="w-full bg-slate-100 rounded-full h-2.5 max-w-[100px]">
                           <div 
-                            className="bg-indigo-600 h-2.5 rounded-full" 
+                            className="bg-blue-600 h-2.5 rounded-full" 
                             style={{ width: `${student.completion}%` }}
                           ></div>
                         </div>

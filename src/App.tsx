@@ -44,6 +44,8 @@ export default function App() {
   const [deadlineFilter, setDeadlineFilter] = React.useState<string>('All');
   const [providerFilter, setProviderFilter] = React.useState<string>('All');
   const [communityFilter, setCommunityFilter] = React.useState<string>('All');
+  const [fullyFundedOnly, setFullyFundedOnly] = React.useState<boolean>(false);
+  const [genderSpecificOnly, setGenderSpecificOnly] = React.useState<boolean>(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [view, setView] = React.useState<'Landing' | 'Results' | 'Profile' | 'Dashboard' | 'Applications' | 'Saved'>(() => {
     const saved = localStorage.getItem('scholar_profile');
@@ -259,6 +261,9 @@ export default function App() {
     const matchesProvider = providerFilter === 'All' || s.provider.toLowerCase().includes(providerFilter.toLowerCase());
     const matchesCommunity = communityFilter === 'All' || (s.targetCommunity && s.targetCommunity.toLowerCase().includes(communityFilter.toLowerCase()));
     
+    const matchesFullyFunded = !fullyFundedOnly || s.fullyFunded === true;
+    const matchesGenderSpecific = !genderSpecificOnly || (s.genderSpecific && s.genderSpecific.toLowerCase() !== 'any' && s.genderSpecific.toLowerCase() !== 'all');
+
     let matchesAmount = true;
     if (amountFilter !== 'All') {
       const amount = parseAmount(m.localCurrencyAmount || s.amount);
@@ -290,7 +295,8 @@ export default function App() {
     
     return matchesFilter && matchesScope && matchesMajor && matchesGpa && matchesLocation && 
            matchesType && matchesCommunityOnly && matchesSearch && matchesProvider && 
-           matchesCommunity && matchesAmount && matchesDeadline;
+           matchesCommunity && matchesAmount && matchesDeadline && 
+           matchesFullyFunded && matchesGenderSpecific;
   }).sort((a, b) => {
     // Primary sort: Scope (State > National > Global)
     const scopePriority = { 'State': 1, 'National': 2, 'Global': 3 };
@@ -420,10 +426,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-200/20 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-rose-200/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
         <div className="absolute top-[40%] right-[10%] w-[30%] h-[30%] bg-amber-200/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
@@ -436,10 +442,10 @@ export default function App() {
             setResults([]); 
             setView('Landing'); 
           }}>
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 border border-slate-100 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 border border-slate-100 group-hover:scale-110 transition-transform">
               <Logo size={24} />
             </div>
-            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600">
               MeritUs
             </span>
           </div>
@@ -462,7 +468,7 @@ export default function App() {
                   onClick={() => setView(view === 'Dashboard' ? 'Results' : 'Dashboard')}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg ${
                     view === 'Dashboard' 
-                      ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                      ? 'bg-blue-600 text-white shadow-blue-200' 
                       : 'bg-white text-slate-900 border border-slate-100 shadow-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -472,7 +478,7 @@ export default function App() {
                   onClick={() => setView(view === 'Applications' ? 'Results' : 'Applications')}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg ${
                     view === 'Applications' 
-                      ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                      ? 'bg-blue-600 text-white shadow-blue-200' 
                       : 'bg-white text-slate-900 border border-slate-100 shadow-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -492,7 +498,7 @@ export default function App() {
                   onClick={() => setView(view === 'Profile' ? 'Results' : 'Profile')}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg ${
                     view === 'Profile' 
-                      ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                      ? 'bg-blue-600 text-white shadow-blue-200' 
                       : 'bg-white text-slate-900 border border-slate-100 shadow-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -572,7 +578,7 @@ export default function App() {
                       <button 
                         onClick={() => { setView('Results'); setIsMenuOpen(false); }}
                         className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                          view === 'Results' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                          view === 'Results' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
                         }`}
                       >
                         <Search size={18} /> Find Scholarships
@@ -580,7 +586,7 @@ export default function App() {
                       <button 
                         onClick={() => { setView('Dashboard'); setIsMenuOpen(false); }}
                         className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                          view === 'Dashboard' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                          view === 'Dashboard' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
                         }`}
                       >
                         <LayoutDashboard size={18} /> Dashboard
@@ -588,7 +594,7 @@ export default function App() {
                       <button 
                         onClick={() => { setView('Applications'); setIsMenuOpen(false); }}
                         className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                          view === 'Applications' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                          view === 'Applications' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
                         }`}
                       >
                         <BookmarkCheck size={18} /> My Applications
@@ -610,7 +616,7 @@ export default function App() {
                       <button 
                         onClick={() => { setView('Profile'); setIsMenuOpen(false); }}
                         className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                          view === 'Profile' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                          view === 'Profile' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
                         }`}
                       >
                         <User size={18} /> My Profile
@@ -656,23 +662,23 @@ export default function App() {
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100 mb-4"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 mb-4"
                 >
                   <Globe size={12} /> {t('landing.badge')}
                 </motion.div>
                 <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-slate-900 tracking-tight leading-[0.9]">
                   {t('landing.title1')} <br/>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-600">{t('landing.title2')}</span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-violet-600 to-rose-600">{t('landing.title2')}</span>
                 </h1>
                 <p className="text-lg text-slate-500 leading-relaxed font-medium max-w-2xl mx-auto">
                   {t('landing.desc1')} 
-                  <span className="block text-indigo-600 font-bold mt-2">{t('landing.desc2')}</span>
+                  <span className="block text-blue-600 font-bold mt-2">{t('landing.desc2')}</span>
                 </p>
               </div>
               
               {profile ? (
                 <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-50 text-center max-w-xl mx-auto">
-                  <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
                     <User size={40} />
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 mb-2">Welcome back, {profile.fullName.split(' ')[0]}!</h3>
@@ -688,7 +694,7 @@ export default function App() {
                     <button 
                       onClick={() => handleProfileSubmit(profile)}
                       disabled={isLoading}
-                      className="px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isLoading ? (
                         <>
@@ -709,7 +715,7 @@ export default function App() {
               
               <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
                 <div className="p-6 group">
-                  <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
+                  <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
                     <Globe size={28} />
                   </div>
                   <h3 className="font-black text-slate-900 mb-2">{t('landing.f1.title')}</h3>
@@ -804,7 +810,7 @@ export default function App() {
                   <p className="text-slate-500 font-medium mb-8">Start exploring matches and click "Apply Now" to track them here.</p>
                   <button 
                     onClick={() => setView('Results')}
-                    className="px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                    className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
                   >
                     Explore Scholarships
                   </button>
@@ -860,7 +866,7 @@ export default function App() {
                   <p className="text-slate-500 font-medium mb-8">Click the heart icon on any scholarship to save it for later.</p>
                   <button 
                     onClick={() => setView('Results')}
-                    className="px-8 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                    className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
                   >
                     Find Scholarships
                   </button>
@@ -902,7 +908,7 @@ export default function App() {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
                   <div className="space-y-1 md:space-y-2">
                     <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                      Found <span className="text-indigo-600">{results.length}</span> Opportunities
+                      Found <span className="text-blue-600">{results.length}</span> Opportunities
                     </h2>
                     <p className="text-slate-400 text-xs md:text-sm font-medium flex items-center gap-2">
                       <MapPin size={14} className="text-rose-400" /> 
@@ -919,13 +925,13 @@ export default function App() {
                           placeholder="Search keywords..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-12 pr-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all text-sm font-medium w-full md:w-64"
+                          className="pl-12 pr-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all text-sm font-medium w-full md:w-64"
                         />
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => profile && handleProfileSubmit(profile)}
-                          className="p-3 bg-white border border-slate-100 hover:border-indigo-200 text-slate-400 hover:text-indigo-600 rounded-2xl transition-all shadow-sm flex items-center justify-center flex-grow sm:flex-grow-0"
+                          className="p-3 bg-white border border-slate-100 hover:border-blue-200 text-slate-400 hover:text-blue-600 rounded-2xl transition-all shadow-sm flex items-center justify-center flex-grow sm:flex-grow-0"
                           title="Refresh search results"
                         >
                           <motion.div
@@ -939,8 +945,8 @@ export default function App() {
                           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                           className={`px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2 flex-grow sm:flex-grow-0 ${
                             showAdvancedFilters 
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200' 
-                              : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-200'
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200' 
+                              : 'bg-white text-slate-400 border-slate-100 hover:border-blue-200'
                           }`}
                         >
                           <Filter size={14} /> {showAdvancedFilters ? 'Hide' : 'Filters'}
@@ -953,7 +959,7 @@ export default function App() {
                             <button
                               key={idx}
                               onClick={() => setSearchQuery(query)}
-                              className="px-3 py-1 bg-white border border-slate-100 hover:border-indigo-200 text-slate-400 hover:text-indigo-600 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                              className="px-3 py-1 bg-white border border-slate-100 hover:border-blue-200 text-slate-400 hover:text-blue-600 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 shadow-sm"
                             >
                               <Clock size={10} /> {query}
                             </button>
@@ -971,7 +977,7 @@ export default function App() {
                               onClick={() => setFilter(cat)}
                               className={`px-4 md:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                                 filter === cat 
-                                  ? 'bg-white text-indigo-600 shadow-sm' 
+                                  ? 'bg-white text-blue-600 shadow-sm' 
                                   : 'text-slate-400 hover:text-slate-600'
                               }`}
                             >
@@ -987,7 +993,7 @@ export default function App() {
                               onClick={() => setScopeFilter(scope)}
                               className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                                 scopeFilter === scope 
-                                  ? 'bg-white text-indigo-600 shadow-sm' 
+                                  ? 'bg-white text-blue-600 shadow-sm' 
                                   : 'text-slate-400 hover:text-slate-600'
                               }`}
                             >
@@ -1016,7 +1022,7 @@ export default function App() {
                           className={`px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2 flex-grow sm:flex-grow-0 ${
                             communityOnly 
                               ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200' 
-                              : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-200'
+                              : 'bg-white text-slate-400 border-slate-100 hover:border-blue-200'
                           }`}
                         >
                           <Filter size={14} /> <span className="hidden sm:inline">Community</span>
@@ -1042,7 +1048,7 @@ export default function App() {
                             placeholder="e.g. Computer Science"
                             value={majorFilter === 'All' ? '' : majorFilter}
                             onChange={(e) => setMajorFilter(e.target.value || 'All')}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1050,7 +1056,7 @@ export default function App() {
                           <select
                             value={gpaFilter}
                             onChange={(e) => setGpaFilter(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           >
                             <option value="All">Any CGPA</option>
                             <option value="5.0">Up to 5.0</option>
@@ -1068,7 +1074,7 @@ export default function App() {
                             placeholder="e.g. California"
                             value={locationFilter === 'All' ? '' : locationFilter}
                             onChange={(e) => setLocationFilter(e.target.value || 'All')}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1076,7 +1082,7 @@ export default function App() {
                           <select
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value as any)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           >
                             <option value="All">All Types</option>
                             <option value="Merit-based">Merit-based</option>
@@ -1091,7 +1097,7 @@ export default function App() {
                           <select
                             value={deadlineFilter}
                             onChange={(e) => setDeadlineFilter(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           >
                             <option value="All">Any Deadline</option>
                             <option value="Closing Soon">Closing Soon (1 Month)</option>
@@ -1105,7 +1111,7 @@ export default function App() {
                           <select
                             value={amountFilter}
                             onChange={(e) => setAmountFilter(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           >
                             <option value="All">Any Amount</option>
                             <option value="0-1000">Up to 1,000</option>
@@ -1121,15 +1127,37 @@ export default function App() {
                             placeholder="e.g. Google, Tata"
                             value={providerFilter === 'All' ? '' : providerFilter}
                             onChange={(e) => setProviderFilter(e.target.value || 'All')}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           />
+                        </div>
+                        <div className="space-y-2 flex flex-col justify-end">
+                          <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={fullyFundedOnly}
+                              onChange={(e) => setFullyFundedOnly(e.target.checked)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-xs font-medium text-slate-700">Fully Funded Only</span>
+                          </label>
+                        </div>
+                        <div className="space-y-2 flex flex-col justify-end">
+                          <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={genderSpecificOnly}
+                              onChange={(e) => setGenderSpecificOnly(e.target.checked)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-xs font-medium text-slate-700">Gender Specific Only</span>
+                          </label>
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Target Community</label>
                           <select
                             value={communityFilter}
                             onChange={(e) => setCommunityFilter(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-medium"
                           >
                             <option value="All">All Communities</option>
                             <option value="Students in STEM">Students in STEM</option>
@@ -1152,6 +1180,8 @@ export default function App() {
                             setDeadlineFilter('All');
                             setProviderFilter('All');
                             setCommunityFilter('All');
+                            setFullyFundedOnly(false);
+                            setGenderSpecificOnly(false);
                           }}
                           className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-700 transition-colors"
                         >
@@ -1179,7 +1209,7 @@ export default function App() {
                   <div className="flex flex-wrap justify-center gap-4">
                     <button 
                       onClick={() => profile && handleProfileSubmit(profile)}
-                      className="px-8 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                      className="px-8 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
                     >
                       Try Again
                     </button>
@@ -1240,7 +1270,7 @@ export default function App() {
                   {filteredResults.filter(item => item.scholarship.deadline.toLowerCase().includes('upcoming')).length > 0 && (
                     <section className="pt-16 border-t border-slate-100">
                       <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                           <GraduationCap size={20} />
                         </div>
                         <div>
@@ -1303,7 +1333,7 @@ export default function App() {
                     {results.length > 0 && (
                       <div className="flex flex-wrap justify-center gap-3">
                         {searchQuery && (
-                          <button onClick={() => setSearchQuery('')} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100 hover:bg-indigo-100 transition-colors">
+                          <button onClick={() => setSearchQuery('')} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-colors">
                             Clear Search
                           </button>
                         )}
@@ -1313,7 +1343,7 @@ export default function App() {
                           </button>
                         )}
                         {scopeFilter !== 'All' && (
-                          <button onClick={() => setScopeFilter('All')} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100 hover:bg-indigo-100 transition-colors">
+                          <button onClick={() => setScopeFilter('All')} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-colors">
                             Show All Scopes
                           </button>
                         )}
@@ -1326,7 +1356,7 @@ export default function App() {
                     )}
                     <button 
                       onClick={() => setView('Profile')}
-                      className="mt-6 text-indigo-600 font-black uppercase tracking-widest text-[10px] hover:text-indigo-800 flex items-center justify-center gap-2 mx-auto group"
+                      className="mt-6 text-blue-600 font-black uppercase tracking-widest text-[10px] hover:text-blue-800 flex items-center justify-center gap-2 mx-auto group"
                     >
                       <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Edit your profile
                     </button>
@@ -1404,9 +1434,9 @@ export default function App() {
             © 2026 MeritUs • Empowering Global Education
           </p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">Privacy</a>
-            <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">Terms</a>
-            <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">Contact</a>
+            <a href="#" className="text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest">Privacy</a>
+            <a href="#" className="text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest">Terms</a>
+            <a href="#" className="text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest">Contact</a>
           </div>
         </div>
       </footer>

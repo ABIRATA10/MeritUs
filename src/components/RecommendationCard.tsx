@@ -36,7 +36,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
   const getStatusColor = (status: ApplicationStatus) => {
     switch (status) {
       case 'Awarded': return 'text-emerald-600 bg-emerald-50 border-emerald-100';
-      case 'Applied': return 'text-indigo-600 bg-indigo-50 border-indigo-100';
+      case 'Applied': return 'text-blue-600 bg-blue-50 border-blue-100';
       case 'Rejected': return 'text-rose-600 bg-rose-50 border-rose-100';
       default: return 'text-amber-600 bg-amber-50 border-amber-100';
     }
@@ -45,13 +45,13 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      className="group bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 overflow-hidden flex flex-col h-full"
+      className="group bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 overflow-hidden flex flex-col h-full"
     >
       {/* Header with Match Score */}
       <div className="relative p-5 md:p-6 pb-0">
         <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
           <div className="flex flex-wrap gap-2">
-            <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100">
+            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100">
               {scholarship.category || 'General'}
             </span>
             <span className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-100">
@@ -81,7 +81,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
                 strokeWidth="4"
                 strokeDasharray="150"
                 fill="transparent"
-                className="text-indigo-600"
+                className="text-blue-600"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -91,7 +91,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
           </div>
         </div>
 
-        <h3 className="text-lg font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors mb-2 line-clamp-2">
+        <h3 className="text-lg font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors mb-2 line-clamp-2">
           {scholarship.title}
         </h3>
         <p className="text-xs font-bold text-slate-400 mb-4">{scholarship.provider}</p>
@@ -117,8 +117,8 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
         </div>
 
         {/* AI Insight Snippet */}
-        <div className="p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/30 mb-6">
-          <div className="flex items-center gap-2 text-indigo-600 mb-2">
+        <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100/30 mb-6">
+          <div className="flex items-center gap-2 text-blue-600 mb-2">
             <Sparkles size={14} />
             <span className="text-[10px] font-black uppercase tracking-widest">AI Insight</span>
           </div>
@@ -154,7 +154,7 @@ export const RecommendationCard: React.FC<RecommendationCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => onApply(scholarship.id)}
-              className="flex-grow flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200 hover:shadow-indigo-200"
+              className="flex-grow flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-slate-200 hover:shadow-blue-200"
             >
               Apply Now <ArrowUpRight size={16} />
             </a>

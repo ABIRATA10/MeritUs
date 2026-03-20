@@ -71,13 +71,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-slate-50 shadow-xl shadow-slate-200/50">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
           <div 
-            className="relative w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0 overflow-hidden cursor-pointer group"
+            className="relative w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-blue-200 shrink-0 overflow-hidden cursor-pointer group"
             onClick={() => fileInputRef.current?.click()}
           >
             {profileImageUrl ? (
               <img src={profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
                 <User size={40} />
               </div>
             )}
@@ -108,7 +108,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           </button>
           <button 
             onClick={() => setActiveTab('edit')}
-            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
           >
             <Edit3 size={14} /> Edit Profile
           </button>
@@ -120,7 +120,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <button
           onClick={() => setActiveTab('overview')}
           className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            activeTab === 'overview' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'overview' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           Overview
@@ -128,7 +128,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <button
           onClick={() => setActiveTab('edit')}
           className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            activeTab === 'edit' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'edit' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           Edit Profile
@@ -154,7 +154,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             className="space-y-8"
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard label="Education" value={profile.educationLevel} icon={GraduationCap} color="bg-indigo-50 text-indigo-600" />
+              <StatCard label="Education" value={profile.educationLevel} icon={GraduationCap} color="bg-blue-50 text-blue-600" />
               <StatCard label="Field" value={profile.fieldOfStudy} icon={BookOpen} color="bg-rose-50 text-rose-600" />
               <StatCard label="CGPA" value={profile.gpa} icon={Sparkles} color="bg-amber-50 text-amber-600" />
             </div>
@@ -163,7 +163,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               {/* Academic Details */}
               <div className="bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm space-y-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                     <GraduationCap size={20} />
                   </div>
                   <h3 className="text-xl font-black text-slate-900">Academic Details</h3>

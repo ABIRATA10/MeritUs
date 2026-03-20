@@ -34,6 +34,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     volunteerExperience: '',
     extracurriculars: '',
     awards: '',
+    search_scope: 'Both',
   });
 
   const [isFetchingAddress, setIsFetchingAddress] = React.useState(false);
@@ -126,7 +127,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     onSubmit(formData);
   };
 
-  const inputClasses = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all placeholder:text-slate-300 text-slate-800";
+  const inputClasses = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-slate-300 text-slate-800";
   const labelClasses = (color: string, isEssential?: boolean) => `text-[10px] font-black uppercase tracking-widest ${color} flex items-center gap-2 mb-1 ${isEssential ? 'after:content-["*"] after:ml-0.5 after:text-rose-500' : ''}`;
 
   return (
@@ -135,7 +136,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md -mx-6 md:-mx-10 -mt-6 md:-mt-10 px-6 md:px-10 py-4 md:py-6 border-b border-slate-100 mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-lg ${completionPercentage === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}`}>
+            <div className={`p-1.5 rounded-lg ${completionPercentage === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
               {completionPercentage === 100 ? <CheckCircle2 size={16} /> : <Sparkles size={16} />}
             </div>
             <span className="text-sm font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
@@ -144,7 +145,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               {saveStatus === 'saved' && <span className="text-xs text-emerald-500 font-medium normal-case flex items-center gap-1"><CheckCircle2 size={12} /> Saved</span>}
             </span>
           </div>
-          <span className={`text-sm font-black ${completionPercentage === 100 ? 'text-emerald-600' : 'text-indigo-600'}`}>
+          <span className={`text-sm font-black ${completionPercentage === 100 ? 'text-emerald-600' : 'text-blue-600'}`}>
             {completionPercentage}%
           </span>
         </div>
@@ -168,20 +169,20 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
       </div>
 
       {/* Decorative background elements */}
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-rose-100/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-50/30 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+          <div className="w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
             <MapPin size={20} />
           </div>
           <h3 className="text-xl font-black text-slate-900">Location Details</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500', true)}>
+            <label className={labelClasses('text-blue-500', true)}>
               Country
             </label>
             <input
@@ -195,7 +196,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
           </div>
 
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500')}>
+            <label className={labelClasses('text-blue-500')}>
               Pincode / Zip
             </label>
             <div className="relative group">
@@ -209,13 +210,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {isFetchingAddress ? (
-                  <div className="w-5 h-5 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
                 ) : (
                   formData.pincode.length === 6 && (
                     <button 
                       type="button"
                       onClick={() => fetchAddress(formData.pincode)}
-                      className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Retry Lookup"
                     >
                       <Sparkles size={14} />
@@ -230,7 +231,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
           </div>
 
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500')}>
+            <label className={labelClasses('text-blue-500')}>
               State / Region
             </label>
             <input
@@ -242,10 +243,25 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               placeholder="e.g. Maharashtra"
             />
           </div>
+          <div className="space-y-1">
+            <label className={labelClasses('text-blue-500', true)}>
+              Search Scope
+            </label>
+            <select
+              name="search_scope"
+              value={formData.search_scope}
+              onChange={handleChange}
+              className={inputClasses}
+            >
+              <option value="India">India Only</option>
+              <option value="International">International Only</option>
+              <option value="Both">Both (Global)</option>
+            </select>
+          </div>
         </div>
 
         <div className="mt-8 space-y-1">
-          <label className={labelClasses('text-indigo-500')}>
+          <label className={labelClasses('text-blue-500')}>
             Full Address {formData.country.toLowerCase() === 'india' && "(Auto-fills via Pincode)"}
           </label>
           <input
@@ -556,7 +572,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-xl uppercase tracking-widest relative z-10"
+        className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-xl uppercase tracking-widest relative z-10"
       >
         {isLoading ? (
           <>
