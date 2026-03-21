@@ -16,6 +16,11 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-for-jwt";
 
 const app = express();
+app.use(cors({
+  origin: "https://women-scholarship.vercel.app",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+}));
 const PORT = Number(process.env.PORT) || 3000;
 
 const allowedOrigins = [
