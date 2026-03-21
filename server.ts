@@ -9,6 +9,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import { validatePassword } from "./src/utils/passwordValidator";
+import cors from "cors";
 
 dotenv.config();
 
@@ -17,7 +18,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-jwt';
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+app.use(express.json());app.use(cors({
+  origin: [
+    "https://meritus-abiratapanda46-9203s-projects.vercel.app",
+    "https://meritus.vercel.app",
+    "http://localhost:5173"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-user-email"]
+}));
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
