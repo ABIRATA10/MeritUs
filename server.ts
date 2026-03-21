@@ -3,7 +3,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
-
 import path from "path";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -15,51 +14,32 @@ import { validatePassword } from "./src/utils/passwordValidator";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-for-jwt";
-
 const app = express();
+
+// 1. FIX: Updated CORS to allow ALL your Vercel subdomains
 app.use(cors({
-  origin: "https://women-scholarship.vercel.app",
+  origin: [
+    "https://women-scholarship.vercel.app",
+    /\.vercel\.app$/, // This allows any vercel.app preview URL
+    "http://localhost:5173"
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-user-email"]
 }));
-const PORT = Number(process.env.PORT) || 3000;
-
-const allowedOrigins = [
-  "https://women-scholarship.vercel.app",
-  "http://localhost:5173",
-];
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  console.log("Incoming origin:", origin);
-  console.log("Request:", req.method, req.url);
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-
-  res.header("Vary", "Origin");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-user-email");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-
-  next();
-});
 
 app.use(express.json());
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+// 2. FIX: Single PORT declaration (Make sure no other "const PORT" exists below)
+const PORT = Number(process.env.PORT) || 3000;
+
+// 3. Logger to see if Vercel is reaching your backend
+app.use((req, res, next) => {
+  console.log(`Incoming: ${req.method} ${req.url} from ${req.headers.origin}`);
+  next();
 });
+
+// --- Your transporter and database code starts here ---
 
 const sendEmail = async (to: string, subject: string, text: string) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -976,6 +956,7 @@ if (process.env.NODE_ENV !== "production") {
 // Railway assigns a dynamic PORT. "0.0.0.0" makes the server public.
 
 
+// At the absolute bottom of the file
 app.listen(Number(PORT), "0.0.0.0", () => {
-  console.log(`🚀 Server is live and public on port ${PORT}`);
+  console.log(`🚀 MeritUs Server is live and public on port ${PORT}`);
 });
