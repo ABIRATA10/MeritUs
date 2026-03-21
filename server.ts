@@ -19,20 +19,50 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-for-jwt";
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json());
+// ==================== ADD/KEEP THIS CORS BLOCK HERE ====================
+const allowedOrigins = [
+  "https://women-scholarship.vercel.app",
+  "https://meritus.vercel.app",
+  "https://meritus-abiratapanda46-9203s-projects.vercel.app",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: [
-      "https://meritus-abiratapanda46-9203s-projects.vercel.app",
-      "https://meritus.vercel.app",
-      "https://women-scholarship.vercel.app",
-      "http://localhost:5173",
-    ],
+    origin: function (origin, callback) {
+      console.log("Incoming origin:", origin);
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-user-email"],
   })
 );
+
+app.options("*", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-user-email");
+  return res.sendStatus(204);
+});
+
+app.use(express.json());
+
+app.use((req, _res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+// ==================== END CORS BLOCK ====================
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -585,6 +615,9 @@ app.get("/api/notices", async (_req, res) => {
 
 // Auth routes
 app.post("/api/auth/send-verification", async (req, res) => {
+  // ==================== ADDED THIS LOG HERE ====================
+  console.log("POST /api/auth/send-verification hit", req.body);
+
   try {
     const { email } = req.body;
 
@@ -652,9 +685,11 @@ app.post("/api/auth/signup", async (req, res) => {
     res.json({ id, email, fullName, phoneNumber });
   } catch (error: any) {
     console.error("Failed to create user:", error);
+
     if (error.message?.includes("unique constraint") || error.code === "23505") {
       return res.status(400).json({ error: "User already exists" });
     }
+
     res.status(500).json({ error: "Failed to create user" });
   }
 });
@@ -668,6 +703,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     if (user && user.password_hash) {
       const match = await bcrypt.compare(password, user.password_hash);
+
       if (match) {
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
           expiresIn: "7d",
@@ -809,18 +845,17 @@ app.post("/api/auth/reset-password", async (req, res) => {
 
 app.get("/api/auth/google/url", (_req, res) => {
   const redirectUri = getRedirectUri();
-  console.log("Generating Auth URL with redirect_uri:", redirectUri);
 
   if (!process.env.APP_URL) {
-    return res
-      .status(500)
-      .json({ error: "APP_URL environment variable is missing. This is required for Google Auth." });
+    return res.status(500).json({
+      error: "APP_URL environment variable is missing. This is required for Google Auth.",
+    });
   }
 
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return res
-      .status(500)
-      .json({ error: "Google Client ID or Secret is missing in environment variables." });
+    return res.status(500).json({
+      error: "Google Client ID or Secret is missing in environment variables.",
+    });
   }
 
   const url = client.generateAuthUrl({
@@ -887,8 +922,6 @@ app.get("/auth/google/callback", async (req, res) => {
   if (!code) {
     return res.status(400).send("No code provided");
   }
-
-  console.log("Handling callback with code and redirect_uri:", redirectUri);
 
   try {
     const { tokens } = await client.getToken({
