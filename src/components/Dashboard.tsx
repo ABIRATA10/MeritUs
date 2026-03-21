@@ -20,7 +20,7 @@ import {
 import { ScholarshipMatch, UserProfile, Application, ApplicationStatus } from '../types';
 import { getRecommendations } from '../services/gemini';
 import { RecommendationCard } from './RecommendationCard';
-import { Sparkles as SparklesIcon, Lightbulb } from 'lucide-react';
+import { Sparkles as SparklesIcon, Lightbulb, AlertCircle, User } from 'lucide-react';
 
 interface DashboardProps {
   results: ScholarshipMatch[];
@@ -151,13 +151,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [applications]);
 
-  const stats = [
-    { label: 'Total Matches', value: results.length, icon: <Target className="text-blue-600" />, color: 'from-blue-500/10 to-blue-500/5', textColor: 'text-blue-600' },
-    { label: 'Avg Amount', value: profile ? `${profile.country === 'India' ? '₹' : '$'}${scholarshipStats.avgAmount.toLocaleString()}` : scholarshipStats.avgAmount.toLocaleString(), icon: <TrendingUp className="text-emerald-600" />, color: 'from-emerald-500/10 to-emerald-500/5', textColor: 'text-emerald-600' },
-    { label: 'Applications', value: applications.length, icon: <Activity className="text-amber-600" />, color: 'from-amber-500/10 to-amber-500/5', textColor: 'text-amber-600' },
-    { label: 'Awarded', value: applications.filter(a => a.status === 'Awarded').length, icon: <Award className="text-rose-600" />, color: 'from-rose-500/10 to-rose-500/5', textColor: 'text-rose-600' },
-  ];
-
   // Calendar Logic
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
@@ -177,6 +170,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     });
     return map;
   }, [results]);
+
+  const stats = [
+    { label: 'Total Matches', value: results.length, icon: <Target className="text-blue-600" />, color: 'from-blue-500/10 to-blue-500/5', textColor: 'text-blue-600' },
+    { label: 'Applications', value: applications.length, icon: <Activity className="text-amber-600" />, color: 'from-amber-500/10 to-amber-500/5', textColor: 'text-amber-600' },
+    { label: 'Deadlines This Month', value: Object.values(scholarshipsByDate).flat().filter(r => new Date(r.scholarship.deadline).getMonth() === new Date().getMonth()).length, icon: <CalendarIcon className="text-rose-600" />, color: 'from-rose-500/10 to-rose-500/5', textColor: 'text-rose-600' },
+    { label: 'Awarded', value: applications.filter(a => a.status === 'Awarded').length, icon: <Award className="text-emerald-600" />, color: 'from-emerald-500/10 to-emerald-500/5', textColor: 'text-emerald-600' },
+  ];
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -217,6 +217,75 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </motion.div>
         ))}
       </div>
+
+      {/* Priority Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-rose-50 p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-rose-100 shadow-sm"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-black text-rose-900 flex items-center gap-2">
+              <AlertCircle size={20} className="text-rose-600" /> Priority Actions
+            </h3>
+            <p className="text-xs text-rose-500 font-medium mt-1">Tasks requiring your immediate attention</p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {(!profile || profile.profile_completion_percentage < 100) && (
+            <div className="bg-white p-4 rounded-2xl border border-rose-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                  <User size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900">Complete Your Profile</p>
+                  <p className="text-xs text-slate-500">Your profile is {profile?.profile_completion_percentage || 0}% complete. Finish it to get better matches.</p>
+                </div>
+              </div>
+              <button className="px-4 py-2 bg-amber-100 text-amber-700 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-amber-200 transition-colors">
+                Complete Now
+              </button>
+            </div>
+          )}
+          {applications.filter(a => a.status === 'In Progress').length > 0 && (
+            <div className="bg-white p-4 rounded-2xl border border-rose-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                  <Activity size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900">Finish Applications</p>
+                  <p className="text-xs text-slate-500">You have {applications.filter(a => a.status === 'In Progress').length} applications in progress.</p>
+                </div>
+              </div>
+              <button className="px-4 py-2 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-blue-200 transition-colors">
+                View Applications
+              </button>
+            </div>
+          )}
+          {Object.values(scholarshipsByDate).flat().filter(r => {
+            const daysUntil = Math.ceil((new Date(r.scholarship.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+            return daysUntil > 0 && daysUntil <= 7;
+          }).length > 0 && (
+            <div className="bg-white p-4 rounded-2xl border border-rose-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                  <CalendarIcon size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-900">Urgent Deadlines</p>
+                  <p className="text-xs text-slate-500">You have scholarships with deadlines in the next 7 days.</p>
+                </div>
+              </div>
+              <button className="px-4 py-2 bg-rose-100 text-rose-700 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-rose-200 transition-colors">
+                View Deadlines
+              </button>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Recommendations Section */}
       <motion.div

@@ -8,9 +8,10 @@ import { Dashboard } from './components/Dashboard';
 import { SupportChatbot } from './components/SupportChatbot';
 import { NotificationManager } from './components/NotificationManager';
 import { AdminPortal } from './components/AdminPortal';
+import { StudyAbroad } from './components/StudyAbroad';
 import { UserProfile, Scholarship, MatchResult, User as UserType, ScholarshipMatch, Application, ApplicationStatus, Reminder } from './types';
 import { findScholarships } from './services/gemini';
-import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, Globe, MapPin, User, LogOut, LayoutDashboard, BookmarkCheck, Heart, Bot, AlertTriangle, Clock, RefreshCw, History, Bell, Menu, X } from 'lucide-react';
+import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, Globe, MapPin, User, LogOut, LayoutDashboard, BookmarkCheck, Heart, Bot, AlertTriangle, Clock, RefreshCw, History, Bell, Menu, X, Plane } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './components/Logo';
 import { useLanguage } from './contexts/LanguageContext';
@@ -505,6 +506,16 @@ export default function App() {
                   <Heart size={14} className={savedIds.length > 0 ? "fill-current" : ""} /> {view === 'Saved' ? 'Back to Results' : 'Saved'}
                 </button>
                 <button 
+                  onClick={() => setView(view === 'StudyAbroad' ? 'Results' : 'StudyAbroad')}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg ${
+                    view === 'StudyAbroad' 
+                      ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                      : 'bg-white text-slate-900 border border-slate-100 shadow-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <Plane size={14} /> {view === 'StudyAbroad' ? 'Back to Results' : 'Study Abroad'}
+                </button>
+                <button 
                   onClick={() => setView(view === 'Profile' ? 'Results' : 'Profile')}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg ${
                     view === 'Profile' 
@@ -616,6 +627,14 @@ export default function App() {
                         }`}
                       >
                         <Heart size={18} className={savedIds.length > 0 ? "fill-current" : ""} /> Saved
+                      </button>
+                      <button 
+                        onClick={() => { setView('StudyAbroad'); setIsMenuOpen(false); }}
+                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                          view === 'StudyAbroad' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent'
+                        }`}
+                      >
+                        <Plane size={18} /> Study Abroad
                       </button>
                     </div>
                   </div>
@@ -906,6 +925,15 @@ export default function App() {
                   onBack={() => setView('Results')}
                 />
               )}
+            </motion.div>
+          ) : view === 'StudyAbroad' ? (
+            <motion.div
+              key="studyabroad"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <StudyAbroad />
             </motion.div>
           ) : (
             <motion.div

@@ -31,6 +31,12 @@ export interface UserProfile {
   languagesSpoken?: string;
   volunteerExperience?: string;
   search_scope?: 'India' | 'International' | 'Both';
+  documents?: { name: string; url: string; type: string }[];
+  privacySettings?: {
+    profileVisibility: 'Public' | 'Private';
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+  };
 }
 
 export interface Scholarship {
@@ -45,6 +51,7 @@ export interface Scholarship {
   link: string;
   targetCommunity?: string; // e.g., "OBC", "SC/ST", "Minority", "Students in STEM"
   scope: 'State' | 'National' | 'Global';
+  country?: string; // e.g., "India", "USA", "UK"
   major?: string; // Field of study
   minGpa?: number;
   location?: string; // Specific location if applicable

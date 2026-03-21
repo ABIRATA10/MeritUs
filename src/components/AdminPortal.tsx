@@ -21,6 +21,7 @@ import { ScholarshipManagement } from './admin/ScholarshipManagement';
 import { StudentManagement } from './admin/StudentManagement';
 import { AnalyticsDashboard } from './admin/AnalyticsDashboard';
 import { NoticeManagement } from './admin/NoticeManagement';
+import { ReportedScholarships } from './admin/ReportedScholarships';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -137,6 +138,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
             }`}
           >
             <Bell size={18} /> Notices
+          </button>
+          <button
+            onClick={() => setActiveTab('reported')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'reported' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <AlertTriangle size={18} /> Reported
           </button>
         </div>
 
@@ -320,6 +329,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout,
                   <p className="text-slate-500 font-medium">Manage platform announcements</p>
                 </div>
                 <NoticeManagement adminEmail={currentUser.email} />
+              </motion.div>
+            )}
+
+            {activeTab === 'reported' && (
+              <motion.div
+                key="reported"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <div className="mb-8">
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">Reported Scholarships</h2>
+                  <p className="text-slate-500 font-medium">Review and resolve user reports</p>
+                </div>
+                <ReportedScholarships adminEmail={currentUser.email} />
               </motion.div>
             )}
           </AnimatePresence>

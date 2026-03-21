@@ -1,16 +1,16 @@
 import React from 'react';
 import { UserProfile } from '../types';
-import { User, GraduationCap, MapPin, Briefcase, BookOpen, DollarSign, Building2, Home, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, GraduationCap, MapPin, Briefcase, BookOpen, DollarSign, Building2, Home, Sparkles, CheckCircle2, AlertCircle, FileText, Upload, X, Shield, Bell } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProfileFormProps {
   onSubmit: (profile: UserProfile) => void;
   isLoading: boolean;
   initialData?: UserProfile | null;
+  onAutoSave?: (profile: UserProfile) => void;
 }
 
-export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, initialData }) => {
+export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, initialData, onAutoSave }) => {
   const [formData, setFormData] = React.useState<UserProfile>(initialData || {
     fullName: '',
     phoneNumber: '',
@@ -34,11 +34,12 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     volunteerExperience: '',
     extracurriculars: '',
     awards: '',
+    search_scope: 'Both',
   });
 
   const [isFetchingAddress, setIsFetchingAddress] = React.useState(false);
   const [lookupError, setLookupError] = React.useState<string | null>(null);
-  const { t } = useLanguage();
+  const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved'>('idle');
 
   const getCurrencySymbol = (country: string) => {
     const c = country.toLowerCase().trim();
@@ -101,6 +102,20 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     return () => clearTimeout(timer);
   }, [formData.pincode, formData.country]);
 
+  // Auto-save logic
+  React.useEffect(() => {
+    if (!onAutoSave) return;
+    
+    setSaveStatus('saving');
+    const timer = setTimeout(() => {
+      onAutoSave(formData);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }, 1000); // Debounce save by 1 second
+
+    return () => clearTimeout(timer);
+  }, [formData, onAutoSave]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: name === 'age' ? parseInt(value) : value }));
@@ -112,7 +127,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
     onSubmit(formData);
   };
 
-  const inputClasses = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all placeholder:text-slate-300 text-slate-800";
+  const inputClasses = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-slate-300 text-slate-800";
   const labelClasses = (color: string, isEssential?: boolean) => `text-[10px] font-black uppercase tracking-widest ${color} flex items-center gap-2 mb-1 ${isEssential ? 'after:content-["*"] after:ml-0.5 after:text-rose-500' : ''}`;
 
   return (
@@ -121,14 +136,16 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md -mx-6 md:-mx-10 -mt-6 md:-mt-10 px-6 md:px-10 py-4 md:py-6 border-b border-slate-100 mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-lg ${completionPercentage === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'}`}>
+            <div className={`p-1.5 rounded-lg ${completionPercentage === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
               {completionPercentage === 100 ? <CheckCircle2 size={16} /> : <Sparkles size={16} />}
             </div>
-            <span className="text-sm font-black text-slate-900 uppercase tracking-tight">
+            <span className="text-sm font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
               Profile Completion
+              {saveStatus === 'saving' && <span className="text-xs text-slate-400 font-medium normal-case">Saving...</span>}
+              {saveStatus === 'saved' && <span className="text-xs text-emerald-500 font-medium normal-case flex items-center gap-1"><CheckCircle2 size={12} /> Saved</span>}
             </span>
           </div>
-          <span className={`text-sm font-black ${completionPercentage === 100 ? 'text-emerald-600' : 'text-indigo-600'}`}>
+          <span className={`text-sm font-black ${completionPercentage === 100 ? 'text-emerald-600' : 'text-blue-600'}`}>
             {completionPercentage}%
           </span>
         </div>
@@ -152,20 +169,55 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
       </div>
 
       {/* Decorative background elements */}
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-rose-100/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-50/30 rounded-full blur-3xl pointer-events-none" />
 
+      <div className="relative z-10 mb-10 flex flex-col items-center">
+        <div className="relative group cursor-pointer">
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl shadow-slate-200/50 bg-slate-100 overflow-hidden flex items-center justify-center relative">
+            {formData.profileImageUrl ? (
+              <img src={formData.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User size={40} className="text-slate-300" />
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-white text-xs font-bold uppercase tracking-wider">Upload</span>
+            </div>
+          </div>
+          <input 
+            type="file" 
+            accept="image/*" 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                  alert("Image size should be less than 5MB");
+                  return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setFormData(prev => ({ ...prev, profileImageUrl: reader.result as string }));
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
+        </div>
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-4">Profile Photo</p>
+      </div>
+
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+          <div className="w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
             <MapPin size={20} />
           </div>
           <h3 className="text-xl font-black text-slate-900">Location Details</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500', true)}>
+            <label className={labelClasses('text-blue-500', true)}>
               Country
             </label>
             <input
@@ -179,7 +231,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
           </div>
 
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500')}>
+            <label className={labelClasses('text-blue-500')}>
               Pincode / Zip
             </label>
             <div className="relative group">
@@ -193,13 +245,13 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {isFetchingAddress ? (
-                  <div className="w-5 h-5 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
                 ) : (
                   formData.pincode.length === 6 && (
                     <button 
                       type="button"
                       onClick={() => fetchAddress(formData.pincode)}
-                      className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Retry Lookup"
                     >
                       <Sparkles size={14} />
@@ -214,7 +266,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
           </div>
 
           <div className="space-y-1">
-            <label className={labelClasses('text-indigo-500')}>
+            <label className={labelClasses('text-blue-500')}>
               State / Region
             </label>
             <input
@@ -226,10 +278,25 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               placeholder="e.g. Maharashtra"
             />
           </div>
+          <div className="space-y-1">
+            <label className={labelClasses('text-blue-500', true)}>
+              Search Scope
+            </label>
+            <select
+              name="search_scope"
+              value={formData.search_scope}
+              onChange={handleChange}
+              className={inputClasses}
+            >
+              <option value="India">India Only</option>
+              <option value="International">International Only</option>
+              <option value="Both">Both (Global)</option>
+            </select>
+          </div>
         </div>
 
         <div className="mt-8 space-y-1">
-          <label className={labelClasses('text-indigo-500')}>
+          <label className={labelClasses('text-blue-500')}>
             Full Address {formData.country.toLowerCase() === 'india' && "(Auto-fills via Pincode)"}
           </label>
           <input
@@ -537,10 +604,147 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
         </div>
       </div>
 
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+            <FileText size={20} />
+          </div>
+          <h3 className="text-xl font-black text-slate-900">Documents</h3>
+        </div>
+        
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="space-y-4">
+            {formData.documents && formData.documents.map((doc, index) => (
+              <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                    <FileText size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{doc.name}</p>
+                    <p className="text-xs text-slate-500">{doc.type}</p>
+                  </div>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const newDocs = [...(formData.documents || [])];
+                    newDocs.splice(index, 1);
+                    setFormData(prev => ({ ...prev, documents: newDocs }));
+                  }}
+                  className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+            
+            <div className="relative group cursor-pointer">
+              <div className="w-full border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-colors bg-slate-50 hover:bg-indigo-50/50">
+                <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Upload size={20} />
+                </div>
+                <p className="text-sm font-bold text-slate-700 mb-1">Upload Document</p>
+                <p className="text-xs text-slate-500">Certificates, ID proofs, transcripts (PDF, JPG, PNG)</p>
+              </div>
+              <input 
+                type="file" 
+                accept=".pdf,image/*" 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert("File size should be less than 5MB");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        documents: [...(prev.documents || []), { name: file.name, url: reader.result as string, type: file.type }] 
+                      }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-slate-800 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-200">
+            <Shield size={20} />
+          </div>
+          <h3 className="text-xl font-black text-slate-900">Privacy & Notifications</h3>
+        </div>
+        
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+          <div className="space-y-3">
+            <label className={labelClasses('text-slate-500', true)}>
+              Profile Visibility
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="privacySettings.profileVisibility" 
+                  value="Public" 
+                  checked={formData.privacySettings?.profileVisibility === 'Public' || !formData.privacySettings?.profileVisibility}
+                  onChange={(e) => setFormData(prev => ({ ...prev, privacySettings: { ...prev.privacySettings, profileVisibility: 'Public' as any, emailNotifications: prev.privacySettings?.emailNotifications ?? true, smsNotifications: prev.privacySettings?.smsNotifications ?? false } }))}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm font-bold text-slate-700">Public (Visible to community)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="privacySettings.profileVisibility" 
+                  value="Private" 
+                  checked={formData.privacySettings?.profileVisibility === 'Private'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, privacySettings: { ...prev.privacySettings, profileVisibility: 'Private' as any, emailNotifications: prev.privacySettings?.emailNotifications ?? true, smsNotifications: prev.privacySettings?.smsNotifications ?? false } }))}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm font-bold text-slate-700">Private (Only me)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className={labelClasses('text-slate-500')}>
+              Notifications
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={formData.privacySettings?.emailNotifications ?? true}
+                  onChange={(e) => setFormData(prev => ({ ...prev, privacySettings: { ...prev.privacySettings, profileVisibility: prev.privacySettings?.profileVisibility || 'Public', smsNotifications: prev.privacySettings?.smsNotifications ?? false, emailNotifications: e.target.checked } }))}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-bold text-slate-700 flex items-center gap-2"><Bell size={14} /> Email Alerts (Deadlines, New Matches)</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={formData.privacySettings?.smsNotifications ?? false}
+                  onChange={(e) => setFormData(prev => ({ ...prev, privacySettings: { ...prev.privacySettings, profileVisibility: prev.privacySettings?.profileVisibility || 'Public', emailNotifications: prev.privacySettings?.emailNotifications ?? true, smsNotifications: e.target.checked } }))}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-bold text-slate-700 flex items-center gap-2"><Bell size={14} /> SMS Reminders (Urgent Deadlines)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-xl uppercase tracking-widest relative z-10"
+        className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2rem] transition-all shadow-2xl shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-xl uppercase tracking-widest relative z-10"
       >
         {isLoading ? (
           <>

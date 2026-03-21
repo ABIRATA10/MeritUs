@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Plus, Edit2, Trash2, Search, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Upload, Download } from 'lucide-react';
 import { Scholarship } from '../../types';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -273,12 +273,26 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           />
         </div>
-        <button 
-          onClick={() => setIsCreating(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={18} /> Add Scholarship
-        </button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button 
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+            onClick={() => alert('Bulk upload feature coming soon!')}
+          >
+            <Upload size={18} /> Bulk Upload
+          </button>
+          <button 
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+            onClick={() => alert('Export feature coming soon!')}
+          >
+            <Download size={18} /> Export
+          </button>
+          <button 
+            onClick={() => setIsCreating(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={18} /> Add Scholarship
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">

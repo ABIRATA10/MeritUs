@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile, ScholarshipMatch, Application } from '../types';
-import { User, GraduationCap, MapPin, Briefcase, BookOpen, Heart, Edit3, Save, ArrowLeft, CheckCircle2, Sparkles } from 'lucide-react';
+import { User, GraduationCap, MapPin, Briefcase, BookOpen, Heart, Edit3, Save, ArrowLeft, CheckCircle2, Sparkles, FileText, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProfileForm } from './ProfileForm';
 import { ScholarshipCard } from './ScholarshipCard';
@@ -41,6 +41,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size should be less than 5MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -244,6 +248,40 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Documents */}
+            {profile.documents && profile.documents.length > 0 && (
+              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <FileText size={20} />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">Documents</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {profile.documents.map((doc, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                          <FileText size={18} />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-bold text-slate-900 truncate">{doc.name}</p>
+                          <p className="text-xs text-slate-500 truncate">{doc.type}</p>
+                        </div>
+                      </div>
+                      <a 
+                        href={doc.url} 
+                        download={doc.name}
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors shrink-0"
+                      >
+                        <Download size={16} />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
