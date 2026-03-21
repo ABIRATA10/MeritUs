@@ -16,13 +16,15 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-for-jwt";
 const app = express();
 
-// 1. FIX: Updated CORS to allow ALL your Vercel subdomains
+// This FIXES the Vercel connection error permanently
 app.use(cors({
-  origin: [
-    "https://women-scholarship.vercel.app",
-    /\.vercel\.app$/, // This allows any vercel.app preview URL
-    "http://localhost:5173"
-  ],
+  origin: (origin, callback) => {
+    if (!origin || origin.endsWith(".vercel.app") || origin === "http://localhost:5173") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "x-user-email"]
@@ -30,34 +32,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// 2. FIX: Single PORT declaration (Make sure no other "const PORT" exists below)
+// This FIXES the Railway "already declared" crash
 const PORT = Number(process.env.PORT) || 3000;
-
-// 3. Logger to see if Vercel is reaching your backend
-app.use((req, res, next) => {
-  console.log(`Incoming: ${req.method} ${req.url} from ${req.headers.origin}`);
-  next();
-});
-
-// --- Your transporter and database code starts here ---
-
-const sendEmail = async (to: string, subject: string, text: string) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log(`[DEMO EMAIL] To: ${to} | Subject: ${subject} | Text: ${text}`);
-    return;
-  }
-
-  try {
-    await transporter.sendMail({
-      from: `"MeritUs" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      text,
-    });
-  } catch (error) {
-    console.error("Failed to send email:", error);
-  }
-};
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
