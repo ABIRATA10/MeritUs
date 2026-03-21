@@ -12,7 +12,6 @@ import jwt from "jsonwebtoken";
 import { Pool } from "pg";
 import { validatePassword } from "./src/utils/passwordValidator";
 
-
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-jwt';
@@ -20,7 +19,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-jwt';
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());app.use(cors({
+app.use(express.json());
+app.use(cors({
   origin: [
     "https://meritus-abiratapanda46-9203s-projects.vercel.app",
     "https://meritus.vercel.app",
@@ -60,7 +60,24 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
-      
+
+// ============================================================
+// THIS IS THE FIX: Wrapped everything in an async function + try/catch
+// Also added the missing CREATE TABLE users
+// ============================================================
+const initDb = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE,
+        password TEXT,
+        password_hash TEXT,
+        auth_provider TEXT,
+        fullName TEXT,
+        phoneNumber TEXT
+      )
+    `);
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_profiles (
@@ -177,8 +194,9 @@ const pool = new Pool({
         FOREIGN KEY(userId) REFERENCES users(id)
       )
     `);
+
     console.log("Database initialized successfully");
-   catch (error) {
+  } catch (error) {
     console.error("Database initialization failed:", error);
   }
 };
@@ -198,7 +216,7 @@ const getRedirectUri = () => {
 // Admin middleware
 const isAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim());
-  const userEmail = req.headers['x-user-email'] as string; // Simple auth for demo, in real app use session/token
+  const userEmail = req.headers['x-user-email'] as string;
   
   if (!userEmail || !adminEmails.includes(userEmail)) {
     return res.status(403).json({ error: "Forbidden: Admin access required" });
@@ -216,12 +234,11 @@ app.get("/api/admin/dashboard", isAdmin, async (req, res) => {
     
     const recentSignups = (await pool.query("SELECT fullName as name, email, 'N/A' as joined_date FROM users ORDER BY id DESC LIMIT 5")).rows;
     
-    // Top 5 most matched scholarships (using bookmarks as proxy for matches for now)
     const topScholarships = (await pool.query(`
       SELECT s.name, COUNT(b.scholarship_id) as match_count 
       FROM scholarships s 
       LEFT JOIN bookmarks b ON s.id = b.scholarship_id 
-      GROUP BY s.id 
+      GROUP BY s.id, s.name
       ORDER BY match_count DESC 
       LIMIT 5
     `)).rows;
@@ -330,7 +347,7 @@ app.get("/api/admin/analytics", isAdmin, async (req, res) => {
       SELECT s.name, COUNT(b.scholarship_id) as value 
       FROM scholarships s 
       LEFT JOIN bookmarks b ON s.id = b.scholarship_id 
-      GROUP BY s.id 
+      GROUP BY s.id, s.name
       ORDER BY value DESC 
       LIMIT 10
     `)).rows;
@@ -400,7 +417,7 @@ app.post("/api/profile/:userId", async (req, res) => {
   }
 });
 
-// Notices for users
+// Scholarships & notices for users
 app.get("/api/scholarships", async (req, res) => {
   try {
     const scholarships = (await pool.query("SELECT * FROM scholarships")).rows;
@@ -420,18 +437,17 @@ app.get("/api/notices", async (req, res) => {
   }
 });
 
-// API routes
+// Auth routes
 app.post("/api/auth/send-verification", async (req, res) => {
   const { email } = req.body;
   
-  // Check if user already exists
   const existingUser = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0];
   if (existingUser) {
     return res.status(400).json({ error: "User already exists" });
   }
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+  const expires = Date.now() + 15 * 60 * 1000;
   
   await pool.query(`
     INSERT INTO verification_codes (email, code, expires) VALUES ($1, $2, $3)
@@ -450,7 +466,6 @@ app.post("/api/auth/send-verification", async (req, res) => {
 app.post("/api/auth/signup", async (req, res) => {
   const { email, password, fullName, phoneNumber, code } = req.body;
   
-  // Verify code
   const verification = (await pool.query("SELECT * FROM verification_codes WHERE email = $1", [email])).rows[0] as any;
   if (!verification || verification.code !== code || verification.expires < Date.now()) {
     return res.status(400).json({ error: "Invalid or expired verification code" });
@@ -468,7 +483,6 @@ app.post("/api/auth/signup", async (req, res) => {
     await pool.query("INSERT INTO users (id, email, password_hash, auth_provider, fullName, phoneNumber) VALUES ($1, $2, $3, $4, $5, $6)", 
       [id, email, password_hash, 'email', fullName, phoneNumber]);
     
-    // Clean up verification code
     await pool.query("DELETE FROM verification_codes WHERE email = $1", [email]);
     
     res.json({ id, email, fullName, phoneNumber });
@@ -498,7 +512,6 @@ app.post("/api/auth/login", async (req, res) => {
       });
     }
   } else if (user && user.password) {
-    // Legacy plain text fallback (optional, but good for existing demo users)
     if (password === user.password) {
       const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
       return res.json({
@@ -546,7 +559,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
   
   if (user) {
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const expires = Date.now() + 15 * 60 * 1000;
     const id = Math.random().toString(36).substr(2, 9);
     
     await pool.query("INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES ($1, $2, $3, $4)", [id, user.id, token, expires]);
@@ -558,7 +571,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
       `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}\n\nThis link will expire in 1 hour.`
     );
     
-    res.json({ message: "Reset link sent", demoToken: token }); // Sending demoToken for easier testing in this environment
+    res.json({ message: "Reset link sent", demoToken: token });
   } else {
     res.status(404).json({ error: "User not found" });
   }
@@ -590,11 +603,11 @@ app.get("/api/auth/google/url", (req, res) => {
   console.log("Generating Auth URL with redirect_uri:", redirectUri);
   
   if (!process.env.APP_URL) {
-    return res.status(500).json({ error: "APP_URL environment variable is missing. This is required for Google Auth." });
+    return res.status(500).json({ error: "APP_URL environment variable is missing." });
   }
 
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return res.status(500).json({ error: "Google Client ID or Secret is missing in environment variables." });
+    return res.status(500).json({ error: "Google Client ID or Secret is missing." });
   }
 
   const url = client.generateAuthUrl({
@@ -667,7 +680,6 @@ app.get("/auth/google/callback", async (req, res) => {
 
     const googleUser = userInfo.data as any;
 
-    // Persist user to database if they don't exist
     let dbUser = (await pool.query("SELECT * FROM users WHERE email = $1", [googleUser.email])).rows[0] as any;
     
     if (!dbUser) {
@@ -676,7 +688,6 @@ app.get("/auth/google/callback", async (req, res) => {
       dbUser = { id, email: googleUser.email, fullname: googleUser.name };
     }
 
-    // Send user back via postMessage to the parent window.
     res.send(`
       <html>
         <body>
