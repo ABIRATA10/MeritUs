@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",
+    "cors": "^2.8.5",
+"@types/cors": "^2.8.17",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
