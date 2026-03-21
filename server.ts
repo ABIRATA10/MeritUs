@@ -1,4 +1,3 @@
-import cors from "cors";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { OAuth2Client } from "google-auth-library";
@@ -17,52 +16,11 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-for-jwt";
 
 const app = express();
-
-// ==================== ADD/KEEP THIS CORS BLOCK HERE ====================
-const allowedOrigins = [
-  "https://women-scholarship.vercel.app",
-  "https://meritus.vercel.app",
-  "https://meritus-abiratapanda46-9203s-projects.vercel.app",
-  "http://localhost:5173",
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      console.log("Incoming origin:", origin);
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-user-email"],
-  })
-);
-
-app.options("*", (req, res) => {
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-user-email");
-  return res.sendStatus(204);
-});
-
-app.use(express.json());
-
-const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 const allowedOrigins = [
   "https://women-scholarship.vercel.app",
-  "http://localhost:5173"
+  "http://localhost:5173",
 ];
 
 app.use((req, res, next) => {
@@ -88,7 +46,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-// ==================== END CORS BLOCK ====================
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -269,7 +226,6 @@ const getRedirectUri = () => {
   return `${baseUrl}/auth/google/callback`;
 };
 
-// Admin middleware
 const isAdmin = (
   req: express.Request,
   res: express.Response,
@@ -289,7 +245,6 @@ const isAdmin = (
   next();
 };
 
-// Admin routes
 app.get("/api/admin/dashboard", isAdmin, async (_req, res) => {
   try {
     const totalStudents = (
@@ -527,7 +482,6 @@ app.post("/api/admin/notices", isAdmin, async (req, res) => {
   }
 });
 
-// Profile routes
 app.get("/api/profile/:userId", async (req, res) => {
   try {
     const profile = (
@@ -616,7 +570,6 @@ app.post("/api/profile/:userId", async (req, res) => {
   }
 });
 
-// Public routes
 app.get("/api/scholarships", async (_req, res) => {
   try {
     const scholarships = (await pool.query("SELECT * FROM scholarships")).rows;
@@ -639,9 +592,7 @@ app.get("/api/notices", async (_req, res) => {
   }
 });
 
-// Auth routes
 app.post("/api/auth/send-verification", async (req, res) => {
-  // ==================== ADDED THIS LOG HERE ====================
   console.log("POST /api/auth/send-verification hit", req.body);
 
   try {
@@ -791,7 +742,6 @@ app.get("/api/auth/me", async (req, res) => {
       phoneNumber: user.phonenumber ?? user.phoneNumber,
     });
   } catch (error) {
-    console.error("Invalid token:", error);
     res.status(401).json({ error: "Invalid or expired token" });
   }
 });
@@ -873,15 +823,15 @@ app.get("/api/auth/google/url", (_req, res) => {
   const redirectUri = getRedirectUri();
 
   if (!process.env.APP_URL) {
-    return res.status(500).json({
-      error: "APP_URL environment variable is missing. This is required for Google Auth.",
-    });
+    return res
+      .status(500)
+      .json({ error: "APP_URL environment variable is missing. This is required for Google Auth." });
   }
 
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return res.status(500).json({
-      error: "Google Client ID or Secret is missing in environment variables.",
-    });
+    return res
+      .status(500)
+      .json({ error: "Google Client ID or Secret is missing in environment variables." });
   }
 
   const url = client.generateAuthUrl({
@@ -896,7 +846,6 @@ app.get("/api/auth/google/url", (_req, res) => {
   res.json({ url });
 });
 
-// Reminder endpoints
 app.post("/api/reminders", async (req, res) => {
   const { userId, scholarshipId, scholarshipTitle, reminderTime } = req.body;
   const id = Math.random().toString(36).substr(2, 9);
@@ -1004,7 +953,6 @@ app.get("/auth/google/callback", async (req, res) => {
   }
 });
 
-// Vite middleware for development
 if (process.env.NODE_ENV !== "production") {
   const vite = await createViteServer({
     server: { middlewareMode: true },
