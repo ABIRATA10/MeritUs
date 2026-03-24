@@ -104,7 +104,7 @@ export const NotificationManager: React.FC = () => {
             isOpen ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
           }`}
         >
-          {permission === 'denied' ? <BellOff size={20} /> : <Bell size={20} />}
+          <Bell size={20} />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce">
               {unreadCount}
@@ -146,7 +146,15 @@ export const NotificationManager: React.FC = () => {
                 {notifications.length > 0 ? (
                   <div className="divide-y divide-slate-50">
                     {notifications.map((n) => (
-                      <div key={n.id} className={`p-6 transition-colors ${n.read ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <div 
+                        key={n.id} 
+                        onClick={() => {
+                          if (!n.read) {
+                            setNotifications(prev => prev.map(notif => notif.id === n.id ? { ...notif, read: true } : notif));
+                          }
+                        }}
+                        className={`p-6 transition-colors cursor-pointer ${n.read ? 'bg-white' : 'bg-slate-50/50 hover:bg-slate-100/50'}`}
+                      >
                         <div className="flex gap-4">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                             n.type === 'success' ? 'bg-emerald-50 text-emerald-600' :

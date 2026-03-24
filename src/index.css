@@ -8,4 +8,21 @@
 
 body {
   @apply antialiased selection:bg-rose-100 selection:text-rose-900;
+  top: 0 !important;
+}
+
+.skiptranslate iframe {
+  display: none !important;
+}
+
+#goog-gt-tt {
+  display: none !important;
+}
+
+.goog-te-spinner-pos {
+  display: none !important;
+}
+
+.goog-te-spinner-animation {
+  display: none !important;
 }

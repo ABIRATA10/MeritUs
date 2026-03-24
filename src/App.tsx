@@ -19,6 +19,7 @@ import { useLanguage } from './contexts/LanguageContext';
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function App() {
+  const { language, setLanguage, t, translateNumber } = useLanguage();
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(() => {
     const saved = localStorage.getItem('scholar_current_user');
     return saved ? JSON.parse(saved) : null;
@@ -52,7 +53,7 @@ export default function App() {
     const saved = localStorage.getItem('scholar_profile');
     return saved ? 'Results' : 'Landing';
   });
-  const [sortBy, setSortBy] = React.useState<'Match' | 'DeadlineAsc' | 'DeadlineDesc' | 'AmountDesc' | 'ProviderAsc'>('Match');
+  const [sortBy, setSortBy] = React.useState<'Match' | 'DeadlineAsc' | 'DeadlineDesc' | 'AmountDesc' | 'ProviderAsc' | 'Latest'>('Match');
   const [applications, setApplications] = React.useState<Application[]>(() => {
     const saved = localStorage.getItem('scholar_applications');
     if (saved) return JSON.parse(saved);
@@ -91,7 +92,6 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isAdminPortalOpen, setIsAdminPortalOpen] = React.useState(false);
   const [reminders, setReminders] = React.useState<Reminder[]>([]);
-  const { language, setLanguage, t } = useLanguage();
 
   const isAdmin = currentUser?.email && import.meta.env.VITE_ADMIN_EMAILS?.split(',').map((e: string) => e.trim()).includes(currentUser.email);
 
@@ -309,6 +309,11 @@ export default function App() {
            matchesCommunity && matchesAmount && matchesDeadline && 
            matchesFullyFunded && matchesGenderSpecific;
   }).sort((a, b) => {
+    if (sortBy === 'Latest') {
+      // For "Latest", we just return them in the order they were provided (which is usually newest first from DB)
+      return 0;
+    }
+
     // Primary sort: Scope (State > National > Global)
     const scopePriority = { 'State': 1, 'National': 2, 'Global': 3 };
     const scopeA = scopePriority[a.scholarship.scope] || 4;
@@ -339,6 +344,20 @@ export default function App() {
     const existing = applications.find(a => a.scholarshipId === id);
     if (!existing) {
       handleUpdateApplicationStatus(id, 'In Progress');
+      if (currentUser?.email) {
+        const scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        if (scholarship) {
+          fetch(`${API_URL}/api/notifications/email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              subject: `Application Started: ${scholarship.title}`,
+              text: `You have started an application for: ${scholarship.title}.\n\nProvider: ${scholarship.provider}\nAmount: ${scholarship.amount}\nDeadline: ${scholarship.deadline}\n\nGood luck with your application!`
+            })
+          }).catch(console.error);
+        }
+      }
     }
     setIsAssistantOpen(true);
   };
@@ -365,6 +384,21 @@ export default function App() {
 
   const handleSave = (id: string) => {
     setSavedIds(prev => {
+      const isSaving = !prev.includes(id);
+      if (isSaving && currentUser?.email) {
+        const scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        if (scholarship) {
+          fetch(`${API_URL}/api/notifications/email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              subject: `Scholarship Saved: ${scholarship.title}`,
+              text: `You have successfully saved the scholarship: ${scholarship.title}.\n\nProvider: ${scholarship.provider}\nAmount: ${scholarship.amount}\nDeadline: ${scholarship.deadline}\n\nDon't forget to apply before the deadline!`
+            })
+          }).catch(console.error);
+        }
+      }
       if (prev.includes(id)) {
         return prev.filter(i => i !== id);
       }
@@ -827,6 +861,7 @@ export default function App() {
                         onApply={handleApply}
                         onSave={handleSave}
                         isSaved={savedIds.includes(result.scholarship.id)}
+                        onSetReminder={handleSetReminder}
                       />
                     ))}
                 </div>
@@ -883,6 +918,7 @@ export default function App() {
                         onApply={handleApply}
                         onSave={handleSave}
                         isSaved={true}
+                        onSetReminder={handleSetReminder}
                       />
                     ))}
                 </div>
@@ -946,7 +982,7 @@ export default function App() {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
                   <div className="space-y-1 md:space-y-2">
                     <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                      Found <span className="text-blue-600">{results.length}</span> Opportunities
+                      Found <span className="text-blue-600">{translateNumber(results.length)}</span> Opportunities
                     </h2>
                     <p className="text-slate-400 text-xs md:text-sm font-medium flex items-center gap-2">
                       <MapPin size={14} className="text-rose-400" /> 
@@ -1049,6 +1085,7 @@ export default function App() {
                             className="w-full bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-slate-600 focus:ring-0 px-4 py-2 cursor-pointer outline-none"
                           >
                             <option value="Match">Sort: Match</option>
+                            <option value="Latest">Sort: Latest</option>
                             <option value="AmountDesc">Sort: Amount</option>
                             <option value="DeadlineAsc">Sort: Deadline</option>
                             <option value="ProviderAsc">Sort: Provider (A-Z)</option>

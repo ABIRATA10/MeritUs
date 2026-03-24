@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, LogIn, Phone, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, LogIn, Phone, Eye, EyeOff, Globe } from 'lucide-react';
 import { User } from '../types';
 import { Logo } from './Logo';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -23,6 +23,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [country, setCountry] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
@@ -84,7 +85,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         const response = await fetch(`${API_URL}/api/auth/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, fullName, phoneNumber, code: verificationCode }),
+          body: JSON.stringify({ email, password, fullName, country, phoneNumber, code: verificationCode }),
         });
         const data = await response.json();
         if (response.ok) {
@@ -296,31 +297,6 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   className="space-y-4 overflow-hidden"
                 >
                   <div className="space-y-1">
-                    <label className={labelClasses}>Country</label>
-                    <div className="relative group">
-                      <select
-                        required
-                        className={inputClasses}
-                        onChange={(e) => {
-                          const code = e.target.value;
-                          if (!phoneNumber.startsWith(code)) {
-                            setPhoneNumber(code + ' ');
-                          }
-                        }}
-                      >
-                        <option value="">Select Country</option>
-                        <option value="+91">🇮🇳 India (+91)</option>
-                        <option value="+1">🇺🇸 USA (+1)</option>
-                        <option value="+44">🇬🇧 UK (+44)</option>
-                        <option value="+61">🇦🇺 Australia (+61)</option>
-                        <option value="+1">🇨🇦 Canada (+1)</option>
-                        <option value="+49">🇩🇪 Germany (+49)</option>
-                        <option value="+971">🇦🇪 UAE (+971)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
                     <label className={labelClasses}>{t('auth.name')}</label>
                     <div className="relative group">
                       <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={20} />
@@ -336,7 +312,22 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className={labelClasses}>{t('auth.phone')}</label>
+                    <label className={labelClasses}>Country</label>
+                    <div className="relative group">
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={20} />
+                      <input
+                        required
+                        type="text"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className={inputClasses}
+                        placeholder="e.g. United States"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className={labelClasses}>Phone Number</label>
                     <div className="relative group">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" size={20} />
                       <input
@@ -345,7 +336,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className={inputClasses}
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="+1 234 567 8900"
                       />
                     </div>
                   </div>

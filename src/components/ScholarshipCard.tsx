@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Scholarship, MatchResult, ApplicationStatus } from '../types';
 import { ExternalLink, Award, Calendar, Building2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Info, Search, Share2, Check, Heart, Clock, Trophy, XCircle, Edit3, Save, X, Bell, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ScholarshipCardProps {
   scholarship: Scholarship;
@@ -30,6 +31,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
   onView,
   onSetReminder
 }) => {
+  const { translateNumber } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showReminderPicker, setShowReminderPicker] = useState(false);
@@ -167,7 +169,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
             <div className="flex flex-col items-end">
               <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${getMatchStyles(match.matchScore)}`}>
                 {match.matchScore >= 80 ? <CheckCircle2 size={12} /> : match.matchScore >= 50 ? <Info size={12} /> : <AlertCircle size={12} />}
-                {match.matchScore}% Match
+                {translateNumber(match.matchScore)}% Match
               </span>
               <span className={`text-[8px] font-black uppercase tracking-tighter mt-1 ${
                 match.matchScore >= 80 ? 'text-emerald-600' : 
@@ -204,16 +206,16 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3 text-lg text-slate-900 font-black">
             <Award size={18} className="text-amber-500" />
-            <span>{scholarship.amount}</span>
+            <span>{translateNumber(scholarship.amount)}</span>
             {scholarship.scope === 'Global' && match?.localCurrencyAmount && match.localCurrencyAmount !== scholarship.amount && (
               <span className="text-sm text-slate-400 font-medium">
-                (Approx. {match.localCurrencyAmount})
+                (Approx. {translateNumber(match.localCurrencyAmount)})
               </span>
             )}
           </div>
           {scholarship.scope !== 'Global' && match?.localCurrencyAmount && match.localCurrencyAmount !== scholarship.amount && (
             <div className="text-xs text-emerald-600 font-bold ml-7 bg-emerald-50 px-2 py-0.5 rounded-md inline-block w-fit border border-emerald-100">
-              Local: {match.localCurrencyAmount}
+              Local: {translateNumber(match.localCurrencyAmount)}
             </div>
           )}
         </div>
@@ -355,7 +357,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
                       Minimum GPA Required
                     </p>
                     <p className="text-xs text-slate-700 leading-relaxed font-bold">
-                      {scholarship.minGpa}
+                      {translateNumber(scholarship.minGpa)}
                     </p>
                   </div>
                 )}
@@ -455,7 +457,7 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
                 }}
                 className="w-full py-5 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white text-sm font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-200 group/btn"
               >
-                Apply Now <ExternalLink size={18} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                Direct Link to Apply <ExternalLink size={18} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </a>
             ) : (
               <div className="grid grid-cols-2 gap-3">

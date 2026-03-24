@@ -6,6 +6,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  translateNumber: (num: number | string) => string;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -388,17 +389,57 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return (saved as Language) || 'en';
   });
 
+  React.useEffect(() => {
+    if (language !== 'en') {
+      const checkAndTranslate = setInterval(() => {
+        const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (select) {
+          select.value = language;
+          select.dispatchEvent(new Event('change'));
+          clearInterval(checkAndTranslate);
+        }
+      }, 500);
+      
+      // Stop checking after 5 seconds
+      setTimeout(() => clearInterval(checkAndTranslate), 5000);
+    }
+  }, []);
+
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('meritus_language', lang);
+    
+    // Trigger Google Translate
+    setTimeout(() => {
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      if (select) {
+        select.value = lang;
+        select.dispatchEvent(new Event('change'));
+      }
+    }, 100);
   };
 
   const t = (key: string): string => {
     return translations[language][key] || translations['en'][key] || key;
   };
 
+  const translateNumber = (num: number | string): string => {
+    if (!num) return String(num);
+    const strNum = String(num);
+    
+    if (language === 'hi') {
+      const hindiDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+      return strNum.replace(/[0-9]/g, (d) => hindiDigits[parseInt(d)]);
+    } else if (language === 'or') {
+      const odiaDigits = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
+      return strNum.replace(/[0-9]/g, (d) => odiaDigits[parseInt(d)]);
+    }
+    
+    return strNum;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, translateNumber }}>
       {children}
     </LanguageContext.Provider>
   );

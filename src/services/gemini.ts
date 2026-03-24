@@ -13,6 +13,10 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 export async function findScholarships(
   userProfile: UserProfile
 ): Promise<ScholarshipMatch[]> {
+  if (!apiKey) {
+    throw new Error("The Gemini API key is missing. Please configure the GEMINI_API_KEY environment variable to enable AI-powered scholarship matching.");
+  }
+
   let dbScholarships = [];
   try {
     const res = await fetch(`${API_URL}/api/scholarships`);
@@ -20,7 +24,7 @@ export async function findScholarships(
       dbScholarships = await res.json();
     }
   } catch (err) {
-    console.error("Failed to fetch DB scholarships:", err);
+    console.warn("Could not fetch DB scholarships, proceeding with local data and AI search.", err);
   }
 
     const prompt = `
@@ -40,7 +44,7 @@ export async function findScholarships(
     2. Prioritize:
        - Scholarships currently accepting applications.
        - Upcoming scholarships (those opening in the next 6-12 months).
-       - Scholarships specifically for the user's gender (${userProfile.gender}), year of study (${userProfile.yearOfStudy}), background, extracurricular activities (${userProfile.extracurriculars || 'None listed'}), awards/honors (${userProfile.awards || 'None listed'}), or field of study.
+       - CRITICAL GENDER MATCHING: The user's gender is "${userProfile.gender}". If the user is Female, you MUST prioritize and include scholarships exclusively for women/girls. If the user is Male, you MUST NOT include scholarships that are exclusively for females/women/girls. Only include scholarships that are for males or open to all genders.
        - Local opportunities in ${userProfile.country} and ${userProfile.state}. (e.g., if the user is from Odisha, search for e-Medhabruti, KALIA/Krusi Vidya, Gopabandhu Sikhya Sahayata Yojana, etc.)
        ${userProfile.search_scope === 'India' ? '- CRITICAL: The user has selected "India only". DO NOT show any international scholarships. Only show scholarships available in India.' : '- Global opportunities (USA, UK, Europe, etc.) that accept international students from ' + userProfile.country + '.'}
        ${(userProfile.search_scope === 'International' || userProfile.search_scope === 'Both') ? '- CRITICAL: The user has selected "International" or "Both". Ensure you include a mix of global scholarships.' : ''}
@@ -146,19 +150,27 @@ export async function findScholarships(
   } catch (error: any) {
     console.error("Error finding scholarships:", error);
     
-    if (error.message?.includes("quota") || error.message?.includes("limit")) {
+    if (error.message?.includes("fetch") || error.message?.includes("network") || error.name === "TypeError") {
+      throw new Error("Network error: We couldn't connect to the AI service. Please check your internet connection and try again.");
+    }
+
+    if (error.message?.includes("quota") || error.message?.includes("limit") || error.message?.includes("429")) {
       throw new Error("Our AI advisor is currently handling a lot of requests! 🚀 Please wait a minute and try again—we're eager to help you find your funding!");
     }
     
-    if (error.message?.includes("JSON")) {
+    if (error.message?.includes("JSON") || error.name === "SyntaxError") {
       throw new Error("We encountered a small hiccup while processing the scholarship data. 🧩 Please try searching again, and we'll get it right this time!");
+    }
+
+    if (error.message?.includes("API key not valid") || error.message?.includes("403")) {
+      throw new Error("The provided Gemini API key is invalid or lacks permissions. Please check your configuration.");
     }
 
     if (error.message?.includes("matching your current profile")) {
       throw error;
     }
 
-    throw new Error(error.message || "Oops! Something went wrong while searching for scholarships. 😔 Please check your internet connection and try again!");
+    throw new Error(error.message || "Oops! Something went wrong while searching for scholarships. 😔 Please try again!");
   }
 }
 

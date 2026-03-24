@@ -21,6 +21,7 @@ import { ScholarshipMatch, UserProfile, Application, ApplicationStatus } from '.
 import { getRecommendations } from '../services/gemini';
 import { RecommendationCard } from './RecommendationCard';
 import { Sparkles as SparklesIcon, Lightbulb, AlertCircle, User } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface DashboardProps {
   results: ScholarshipMatch[];
@@ -47,6 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSave,
   onClearHistory
 }) => {
+  const { translateNumber } = useLanguage();
   const [recommendations, setRecommendations] = React.useState<ScholarshipMatch[]>([]);
   const [isRecLoading, setIsRecLoading] = React.useState(false);
 
@@ -172,10 +174,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, [results]);
 
   const stats = [
-    { label: 'Total Matches', value: results.length, icon: <Target className="text-blue-600" />, color: 'from-blue-500/10 to-blue-500/5', textColor: 'text-blue-600' },
-    { label: 'Applications', value: applications.length, icon: <Activity className="text-amber-600" />, color: 'from-amber-500/10 to-amber-500/5', textColor: 'text-amber-600' },
-    { label: 'Deadlines This Month', value: Object.values(scholarshipsByDate).flat().filter(r => new Date(r.scholarship.deadline).getMonth() === new Date().getMonth()).length, icon: <CalendarIcon className="text-rose-600" />, color: 'from-rose-500/10 to-rose-500/5', textColor: 'text-rose-600' },
-    { label: 'Awarded', value: applications.filter(a => a.status === 'Awarded').length, icon: <Award className="text-emerald-600" />, color: 'from-emerald-500/10 to-emerald-500/5', textColor: 'text-emerald-600' },
+    { label: 'Total Matches', value: translateNumber(results.length), icon: <Target className="text-blue-600" />, color: 'from-blue-500/10 to-blue-500/5', textColor: 'text-blue-600' },
+    { label: 'Applications', value: translateNumber(applications.length), icon: <Activity className="text-amber-600" />, color: 'from-amber-500/10 to-amber-500/5', textColor: 'text-amber-600' },
+    { label: 'Deadlines This Month', value: translateNumber(Object.values(scholarshipsByDate).flat().filter(r => new Date(r.scholarship.deadline).getMonth() === new Date().getMonth()).length), icon: <CalendarIcon className="text-rose-600" />, color: 'from-rose-500/10 to-rose-500/5', textColor: 'text-rose-600' },
+    { label: 'Awarded', value: translateNumber(applications.filter(a => a.status === 'Awarded').length), icon: <Award className="text-emerald-600" />, color: 'from-emerald-500/10 to-emerald-500/5', textColor: 'text-emerald-600' },
   ];
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -364,6 +366,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Tooltip 
                   cursor={{ fill: '#f8fafc' }}
                   contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '1rem' }}
+                  formatter={(value: number) => [translateNumber(value), 'Count']}
                 />
                 <Bar dataKey="value" fill="#6366f1" radius={[0, 12, 12, 0]} barSize={24} />
               </BarChart>
@@ -449,10 +452,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   tickLine={false} 
                   tick={{ fontSize: 10, fontWeight: 800, fill: '#64748b' }}
                 />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 800, fill: '#64748b' }} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 800, fill: '#64748b' }} 
+                  tickFormatter={(value) => translateNumber(value)}
+                />
                 <Tooltip 
                   cursor={{ fill: '#f8fafc' }}
                   contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '1rem' }}
+                  formatter={(value: number) => [translateNumber(value), 'Count']}
                 />
                 <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={window.innerWidth < 768 ? 40 : 60}>
                   {applicationStatusData.map((entry, index) => (
