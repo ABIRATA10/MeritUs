@@ -47,7 +47,6 @@ const allowedOrigins = [
 
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
-    // Allow non-browser requests like Postman/server-to-server
     if (!origin) return callback(null, true);
 
     const isAllowed =
@@ -65,8 +64,9 @@ const corsOptions: cors.CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+// ⚠️ OPTIONS must come BEFORE app.use(cors())
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 
 // ================= HELPERS =================
