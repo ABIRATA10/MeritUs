@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, BellOff, X, CheckCircle2, Info, AlertTriangle, Sparkles } from 'lucide-react';
+import { Bell, X, CheckCircle2, Info, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface Notification {
   id: string;

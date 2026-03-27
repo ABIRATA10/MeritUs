@@ -14,7 +14,8 @@ import {
   CheckCircle,
   XCircle,
   Download,
-  Eye
+  Eye,
+  AlertTriangle
 } from 'lucide-react';
 import { User as UserType } from '../types';
 import { ScholarshipManagement } from './admin/ScholarshipManagement';
@@ -32,7 +33,7 @@ interface AdminPortalProps {
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ currentUser, onLogout, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'scholarships' | 'students' | 'analytics' | 'notices'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'scholarships' | 'students' | 'analytics' | 'notices' | 'reported'>('dashboard');
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

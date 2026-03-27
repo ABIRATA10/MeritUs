@@ -16,7 +16,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-for-jwt';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -48,18 +48,32 @@ const sendEmail = async (to: string, subject: string, text: string) => {
 
 // Database setup
 const dbPath = process.env.DATABASE_PATH || 'database.sqlite';
-const db = new Database(dbPath);
+let db: Database.Database | null = null;
+
+function getDb() {
+  if (!db) {
+    try {
+      db = new Database(dbPath);
+    } catch (error) {
+      console.error("Failed to initialize database:", error);
+      throw new Error("Database connection error");
+    }
+  }
+  return db;
+}
+
 const pool = {
   query: async (sql: string, params: any[] = []) => {
     const sqliteSql = sql.replace(/\$(\d+)/g, '?');
     const isSelect = sqliteSql.trim().toUpperCase().startsWith('SELECT');
     const safeParams = params.map(p => p === undefined ? null : p);
     try {
+      const database = getDb();
       if (isSelect) {
-        const rows = db.prepare(sqliteSql).all(...safeParams);
+        const rows = database.prepare(sqliteSql).all(...safeParams);
         return { rows };
       } else {
-        const info = db.prepare(sqliteSql).run(...safeParams);
+        const info = database.prepare(sqliteSql).run(...safeParams);
         return { rows: [], rowCount: info.changes };
       }
     } catch (error) {
@@ -404,6 +418,7 @@ app.get("/api/profile/:userId", async (req, res) => {
     const profile = (await pool.query("SELECT * FROM user_profiles WHERE user_id = $1", [req.params.userId])).rows[0];
     res.json(profile || null);
   } catch (error) {
+    console.error("Failed to fetch profile:", error);
     res.status(500).json({ error: "Failed to fetch profile" });
   }
 });
@@ -474,47 +489,52 @@ app.post("/api/notifications/email", async (req, res) => {
 app.post("/api/auth/send-verification", async (req, res) => {
   const { email } = req.body;
   
-  // Check if user already exists
-  const existingUser = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0];
-  if (existingUser) {
-    return res.status(400).json({ error: "User already exists" });
-  }
+  try {
+    // Check if user already exists
+    const existingUser = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0];
+    if (existingUser) {
+      return res.status(400).json({ error: "User already exists" });
+    }
 
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
-  
-  await pool.query(`
-    INSERT INTO verification_codes (email, code, expires) VALUES ($1, $2, $3)
-    ON CONFLICT (email) DO UPDATE SET code = EXCLUDED.code, expires = EXCLUDED.expires
-  `, [email, code, expires]);
-  
-  await sendEmail(
-    email,
-    "Your MeritUs Verification Code",
-    `Your verification code is: ${code}\n\nThis code will expire in 15 minutes.`
-  );
-  
-  res.json({ message: "Verification code sent", demoCode: code });
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    
+    await pool.query(`
+      INSERT INTO verification_codes (email, code, expires) VALUES ($1, $2, $3)
+      ON CONFLICT (email) DO UPDATE SET code = EXCLUDED.code, expires = EXCLUDED.expires
+    `, [email, code, expires]);
+    
+    await sendEmail(
+      email,
+      "Your MeritUs Verification Code",
+      `Your verification code is: ${code}\n\nThis code will expire in 15 minutes.`
+    );
+    
+    res.json({ message: "Verification code sent", demoCode: code });
+  } catch (error) {
+    console.error("Error in send-verification:", error);
+    res.status(500).json({ error: "Database connection error or internal server error" });
+  }
 });
 
 app.post("/api/auth/signup", async (req, res) => {
   const { email, password, fullName, country, phoneNumber, code } = req.body;
   
-  // Verify code
-  const verification = (await pool.query("SELECT * FROM verification_codes WHERE email = $1", [email])).rows[0] as any;
-  if (!verification || verification.code !== code || verification.expires < Date.now()) {
-    return res.status(400).json({ error: "Invalid or expired verification code" });
-  }
-
-  const passValidation = validatePassword(password);
-  if (!passValidation.valid) {
-    return res.status(400).json({ error: "Password does not meet requirements", details: passValidation.errors });
-  }
-
-  const id = Math.random().toString(36).substr(2, 9);
-  const password_hash = await bcrypt.hash(password, 12);
-  
   try {
+    // Verify code
+    const verification = (await pool.query("SELECT * FROM verification_codes WHERE email = $1", [email])).rows[0] as any;
+    if (!verification || verification.code !== code || verification.expires < Date.now()) {
+      return res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+
+    const passValidation = validatePassword(password);
+    if (!passValidation.valid) {
+      return res.status(400).json({ error: "Password does not meet requirements", details: passValidation.errors });
+    }
+
+    const id = Math.random().toString(36).substr(2, 9);
+    const password_hash = await bcrypt.hash(password, 12);
+    
     await pool.query("INSERT INTO users (id, email, password_hash, auth_provider, fullName, country, phoneNumber) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
       [id, email, password_hash, 'email', fullName, country, phoneNumber]);
     
@@ -527,47 +547,53 @@ app.post("/api/auth/signup", async (req, res) => {
     const token = jwt.sign({ id, email }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ id, email, fullName, country, phoneNumber, token });
   } catch (error: any) {
-    if (error.message.includes("unique constraint")) {
+    console.error("Error in signup:", error);
+    if (error.message && error.message.includes("unique constraint")) {
       res.status(400).json({ error: "User already exists" });
     } else {
-      res.status(500).json({ error: "Failed to create user" });
+      res.status(500).json({ error: "Failed to create user due to a database error" });
     }
   }
 });
 
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
-  
-  if (user && user.password_hash) {
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (match) {
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-      return res.json({
-        id: user.id,
-        email: user.email,
-        fullName: user.fullname,
-        phoneNumber: user.phonenumber,
-        country: user.country,
-        token
-      });
+  try {
+    const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
+    
+    if (user && user.password_hash) {
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (match) {
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        return res.json({
+          id: user.id,
+          email: user.email,
+          fullName: user.fullname,
+          phoneNumber: user.phonenumber,
+          country: user.country,
+          token
+        });
+      }
+    } else if (user && user.password) {
+      // Legacy plain text fallback (optional, but good for existing demo users)
+      if (password === user.password) {
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        return res.json({
+          id: user.id,
+          email: user.email,
+          fullName: user.fullname,
+          phoneNumber: user.phonenumber,
+          country: user.country,
+          token
+        });
+      }
     }
-  } else if (user && user.password) {
-    // Legacy plain text fallback (optional, but good for existing demo users)
-    if (password === user.password) {
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-      return res.json({
-        id: user.id,
-        email: user.email,
-        fullName: user.fullname,
-        phoneNumber: user.phonenumber,
-        country: user.country,
-        token
-      });
-    }
+    
+    res.status(401).json({ error: "Invalid email or password" });
+  } catch (error) {
+    console.error("Error in login:", error);
+    res.status(500).json({ error: "Database connection error or internal server error" });
   }
-  
-  res.status(401).json({ error: "Invalid email or password" });
 });
 
 app.get("/api/auth/me", async (req, res) => {
@@ -598,46 +624,82 @@ app.get("/api/auth/me", async (req, res) => {
 
 app.post("/api/auth/forgot-password", async (req, res) => {
   const { email } = req.body;
-  const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
+  try {
+    const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
+    
+    if (user) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
+      const id = Math.random().toString(36).substr(2, 9);
+      
+      await pool.query("INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES ($1, $2, $3, $4)", [id, user.id, code, expires]);
+      
+      await sendEmail(
+        email,
+        "Reset Your MeritUs Password",
+        `You requested a password reset. Your 6-digit verification code is:\n\n${code}\n\nThis code will expire in 15 minutes.`
+      );
+      
+      res.json({ message: "Reset code sent", demoCode: code }); // Sending demoCode for easier testing in this environment
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error in forgot-password:", error);
+    res.status(500).json({ error: "Database connection error or internal server error" });
+  }
+});
+
+app.post("/api/auth/verify-reset-code", async (req, res) => {
+  const { email, code } = req.body;
   
-  if (user) {
-    const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
-    const id = Math.random().toString(36).substr(2, 9);
+  try {
+    const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const resetRecord = (await pool.query("SELECT * FROM password_reset_tokens WHERE user_id = $1 AND token = $2 AND used = 0 AND expires_at > $3", [user.id, code, Date.now()])).rows[0] as any;
     
-    await pool.query("INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES ($1, $2, $3, $4)", [id, user.id, token, expires]);
-    
-    const resetLink = `${process.env.APP_URL}/reset-password?token=${token}`;
-    await sendEmail(
-      email,
-      "Reset Your MeritUs Password",
-      `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}\n\nThis link will expire in 1 hour.`
-    );
-    
-    res.json({ message: "Reset link sent", demoToken: token }); // Sending demoToken for easier testing in this environment
-  } else {
-    res.status(404).json({ error: "User not found" });
+    if (resetRecord) {
+      res.json({ message: "Code verified successfully" });
+    } else {
+      res.status(400).json({ error: "Invalid or expired reset code" });
+    }
+  } catch (error) {
+    console.error("Error in verify-reset-code:", error);
+    res.status(500).json({ error: "Database connection error or internal server error" });
   }
 });
 
 app.post("/api/auth/reset-password", async (req, res) => {
-  const { token, newPassword } = req.body;
+  const { email, code, newPassword } = req.body;
   
-  const resetRecord = (await pool.query("SELECT * FROM password_reset_tokens WHERE token = $1 AND used = 0 AND expires_at > $2", [token, Date.now()])).rows[0] as any;
-  
-  if (resetRecord) {
-    const passValidation = validatePassword(newPassword);
-    if (!passValidation.valid) {
-      return res.status(400).json({ error: "Password does not meet requirements", details: passValidation.errors });
+  try {
+    const user = (await pool.query("SELECT * FROM users WHERE email = $1", [email])).rows[0] as any;
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    const password_hash = await bcrypt.hash(newPassword, 12);
-    await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [password_hash, resetRecord.user_id]);
-    await pool.query("UPDATE password_reset_tokens SET used = 1 WHERE id = $1", [resetRecord.id]);
+    const resetRecord = (await pool.query("SELECT * FROM password_reset_tokens WHERE user_id = $1 AND token = $2 AND used = 0 AND expires_at > $3", [user.id, code, Date.now()])).rows[0] as any;
     
-    res.json({ message: "Password reset successfully" });
-  } else {
-    res.status(400).json({ error: "Invalid or expired reset token" });
+    if (resetRecord) {
+      const passValidation = validatePassword(newPassword);
+      if (!passValidation.valid) {
+        return res.status(400).json({ error: "Password does not meet requirements", details: passValidation.errors });
+      }
+
+      const password_hash = await bcrypt.hash(newPassword, 12);
+      await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [password_hash, resetRecord.user_id]);
+      await pool.query("UPDATE password_reset_tokens SET used = 1 WHERE id = $1", [resetRecord.id]);
+      
+      res.json({ message: "Password reset successfully" });
+    } else {
+      res.status(400).json({ error: "Invalid or expired reset code" });
+    }
+  } catch (error) {
+    console.error("Error in reset-password:", error);
+    res.status(500).json({ error: "Database connection error or internal server error" });
   }
 });
 

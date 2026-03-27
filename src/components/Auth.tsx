@@ -119,9 +119,20 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       }
 
       if (isResetVerifying) {
-        // We'll just move to reset mode, the server will verify the code during the final reset step
-        setIsResetVerifying(false);
-        setIsResetMode(true);
+        const response = await fetch(`${API_URL}/api/auth/verify-reset-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code: verificationCode }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          setIsResetVerifying(false);
+          setIsResetMode(true);
+        } else {
+          setError(data.error || 'Invalid or expired code');
+        }
         return;
       }
 
@@ -170,8 +181,13 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           setError(data.error || 'Failed to send verification code');
         }
       }
-    } catch (err) {
-      setError('Connection error. Please try again.');
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      if (!API_URL) {
+        setError('Connection error. Please ensure VITE_API_URL is set in your deployment environment.');
+      } else {
+        setError('Connection error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -279,6 +295,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   setIsVerifying(false);
                   setIsResetVerifying(false);
                   if (isResetVerifying) setIsForgotPassword(true);
+                  setVerificationCode('');
                 }}
                 className="w-full text-center text-slate-400 font-bold text-xs hover:text-slate-600 transition-colors"
               >
@@ -485,6 +502,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   setIsForgotPassword(false);
                   setIsResetMode(false);
                   setIsLogin(true);
+                  setVerificationCode('');
+                  setNewPassword('');
+                  setConfirmPassword('');
                 }}
                 className="w-full text-center text-slate-400 font-bold text-xs hover:text-slate-600 transition-colors"
               >
@@ -503,6 +523,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 setIsForgotPassword(false);
                 setIsResetVerifying(false);
                 setIsResetMode(false);
+                setVerificationCode('');
+                setNewPassword('');
+                setConfirmPassword('');
               }}
               className="ml-2 text-blue-600 font-black hover:text-blue-800 transition-colors uppercase tracking-widest text-[10px]"
             >

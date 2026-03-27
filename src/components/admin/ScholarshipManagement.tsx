@@ -15,6 +15,12 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditing, setIsEditing] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   useEffect(() => {
     fetchScholarships();
@@ -46,9 +52,13 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
       });
       if (res.ok) {
         setScholarships(scholarships.filter(s => s.id !== id));
+        showMessage('success', 'Scholarship deleted successfully');
+      } else {
+        showMessage('error', 'Failed to delete scholarship');
       }
     } catch (error) {
       console.error('Failed to delete scholarship:', error);
+      showMessage('error', 'Failed to delete scholarship');
     }
   };
 
@@ -86,9 +96,13 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
         fetchScholarships();
         setIsEditing(null);
         setIsCreating(false);
+        showMessage('success', isEditing ? 'Scholarship updated successfully' : 'Scholarship added successfully');
+      } else {
+        showMessage('error', 'Failed to save scholarship');
       }
     } catch (error) {
       console.error('Failed to save scholarship:', error);
+      showMessage('error', 'Failed to save scholarship');
     }
   };
 
@@ -105,6 +119,11 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8"
       >
+        {message && (
+          <div className={`mb-6 p-4 rounded-xl font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+            {message.text}
+          </div>
+        )}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-black text-slate-900">
             {isEditing ? 'Edit Scholarship' : 'Add New Scholarship'}
@@ -262,6 +281,11 @@ export const ScholarshipManagement: React.FC<ScholarshipManagementProps> = ({ ad
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {message && (
+        <div className={`p-4 rounded-xl font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+          {message.text}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile, ScholarshipMatch, Application } from '../types';
-import { User, GraduationCap, MapPin, Briefcase, BookOpen, Heart, Edit3, Save, ArrowLeft, CheckCircle2, Sparkles, FileText, Download } from 'lucide-react';
+import { User, GraduationCap, MapPin, Briefcase, BookOpen, Heart, Edit3, Save, ArrowLeft, CheckCircle2, Sparkles, FileText, Download, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProfileForm } from './ProfileForm';
 import { ScholarshipCard } from './ScholarshipCard';
@@ -74,33 +74,46 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-slate-50 shadow-xl shadow-slate-200/50">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-          <div 
-            className="relative w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-blue-200 shrink-0 overflow-hidden cursor-pointer group"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {profileImageUrl ? (
-              <img src={profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-                <User size={40} />
+          <div className="flex flex-col items-center sm:items-start gap-3">
+            <div 
+              className="relative w-24 h-24 rounded-[2rem] flex items-center justify-center text-white shadow-lg shadow-blue-200 shrink-0 overflow-hidden cursor-pointer group"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {profileImageUrl ? (
+                <img src={profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+                  <User size={48} />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Edit3 size={24} className="text-white" />
               </div>
-            )}
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Edit3 size={20} className="text-white" />
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleImageUpload} 
-              accept="image/*" 
-              className="hidden" 
-            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+            >
+              <Edit3 size={12} /> Upload Photo
+            </button>
           </div>
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">{profile.fullName}</h2>
             <p className="text-slate-400 font-medium flex items-center justify-center sm:justify-start gap-2 mt-1">
               <MapPin size={14} className="text-rose-400" /> {profile.state}, {profile.country}
             </p>
+            {profile.phoneNumber && (
+              <p className="text-slate-400 font-medium flex items-center justify-center sm:justify-start gap-2 mt-1">
+                <Phone size={14} className="text-blue-400" /> {profile.phoneNumber}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">

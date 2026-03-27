@@ -15,6 +15,7 @@ import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, Globe, MapPin, User
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './components/Logo';
 import { useLanguage } from './contexts/LanguageContext';
+import { LOCAL_SCHOLARSHIP_DATA } from './constants/scholarshipData';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -49,7 +50,7 @@ export default function App() {
   const [fullyFundedOnly, setFullyFundedOnly] = React.useState<boolean>(false);
   const [genderSpecificOnly, setGenderSpecificOnly] = React.useState<boolean>(false);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [view, setView] = React.useState<'Landing' | 'Results' | 'Profile' | 'Dashboard' | 'Applications' | 'Saved'>(() => {
+  const [view, setView] = React.useState<'Landing' | 'Results' | 'Profile' | 'Dashboard' | 'Applications' | 'Saved' | 'StudyAbroad'>(() => {
     const saved = localStorage.getItem('scholar_profile');
     return saved ? 'Results' : 'Landing';
   });
@@ -345,7 +346,25 @@ export default function App() {
     if (!existing) {
       handleUpdateApplicationStatus(id, 'In Progress');
       if (currentUser?.email) {
-        const scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        let scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        if (!scholarship) {
+          const localMatch = LOCAL_SCHOLARSHIP_DATA.split('\n').slice(1).find(line => line.split(',')[0] === id);
+          if (localMatch) {
+            const [localId, title, provider, providerType, gender, category, state, incomeLimit, educationLevel, eligibilityText, deadline, link] = localMatch.split(',');
+            scholarship = { 
+              id: localId, 
+              title, 
+              provider, 
+              amount: 'Variable', 
+              deadline, 
+              description: eligibilityText, 
+              eligibilityCriteria: eligibilityText, 
+              category: providerType as 'Government' | 'Private', 
+              link,
+              scope: 'National'
+            };
+          }
+        }
         if (scholarship) {
           fetch(`${API_URL}/api/notifications/email`, {
             method: 'POST',
@@ -386,7 +405,25 @@ export default function App() {
     setSavedIds(prev => {
       const isSaving = !prev.includes(id);
       if (isSaving && currentUser?.email) {
-        const scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        let scholarship = results.find(r => r.scholarship.id === id)?.scholarship;
+        if (!scholarship) {
+          const localMatch = LOCAL_SCHOLARSHIP_DATA.split('\n').slice(1).find(line => line.split(',')[0] === id);
+          if (localMatch) {
+            const [localId, title, provider, providerType, gender, category, state, incomeLimit, educationLevel, eligibilityText, deadline, link] = localMatch.split(',');
+            scholarship = { 
+              id: localId, 
+              title, 
+              provider, 
+              amount: 'Variable', 
+              deadline, 
+              description: eligibilityText, 
+              eligibilityCriteria: eligibilityText, 
+              category: providerType as 'Government' | 'Private', 
+              link,
+              scope: 'National'
+            };
+          }
+        }
         if (scholarship) {
           fetch(`${API_URL}/api/notifications/email`, {
             method: 'POST',

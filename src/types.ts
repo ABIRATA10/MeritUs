@@ -30,6 +30,7 @@ export interface UserProfile {
   profileDeadline?: string;
   languagesSpoken?: string;
   volunteerExperience?: string;
+  profile_completion_percentage?: number;
   search_scope?: 'India' | 'International' | 'Both';
   documents?: { name: string; url: string; type: string }[];
   privacySettings?: {
