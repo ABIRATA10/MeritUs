@@ -27,7 +27,7 @@ export default function App() {
     return {
       id: 'demo-user-123',
       email: 'abiratapanda46@gmail.com',
-      name: 'Abirata Panda'
+      fullName: 'Abirata Panda'
     };
   });
   const [profile, setProfile] = React.useState<UserProfile | null>(() => {
@@ -35,21 +35,22 @@ export default function App() {
     if (saved) return JSON.parse(saved);
     return {
       fullName: 'Abirata Panda',
-      email: 'abiratapanda46@gmail.com',
-      phone: '',
-      dob: '2000-01-01',
+      phoneNumber: '',
+      age: 20,
       gender: 'Male',
-      category: 'General',
-      state: 'Odisha',
-      district: '',
-      annualIncome: 500000,
       educationLevel: 'Undergraduate',
-      currentCourse: 'B.Tech',
-      currentYear: 2,
-      previousGpa: 8.5,
-      skills: ['Programming'],
-      interests: ['Technology'],
+      yearOfStudy: '2nd Year',
+      institution: 'KIIT University',
+      fieldOfStudy: 'Computer Science',
+      gpa: '8.5',
       country: 'India',
+      state: 'Odisha',
+      pincode: '751024',
+      address: 'Bhubaneswar, Odisha',
+      caste: 'General',
+      incomeBracket: '5L - 8L',
+      background: 'STEM enthusiast',
+      careerGoals: 'Software Engineer',
       search_scope: 'India'
     };
   });
@@ -370,6 +371,14 @@ export default function App() {
     });
   };
 
+  const handleDeleteApplication = (id: string) => {
+    setApplications(prev => {
+      const newApps = prev.filter(a => a.scholarshipId !== id);
+      localStorage.setItem('applications', JSON.stringify(newApps));
+      return newApps;
+    });
+  };
+
   const handleSave = (id: string) => {
     setSavedIds(prev => {
       const isSaving = !prev.includes(id);
@@ -448,25 +457,26 @@ export default function App() {
     setCurrentUser({
       id: 'demo-user-123',
       email: 'abiratapanda46@gmail.com',
-      name: 'Abirata Panda'
+      fullName: 'Abirata Panda'
     });
     setProfile({
       fullName: 'Abirata Panda',
-      email: 'abiratapanda46@gmail.com',
-      phone: '',
-      dob: '2000-01-01',
+      phoneNumber: '',
+      age: 20,
       gender: 'Male',
-      category: 'General',
-      state: 'Odisha',
-      district: '',
-      annualIncome: 500000,
       educationLevel: 'Undergraduate',
-      currentCourse: 'B.Tech',
-      currentYear: 2,
-      previousGpa: 8.5,
-      skills: ['Programming'],
-      interests: ['Technology'],
+      yearOfStudy: '2nd Year',
+      institution: 'KIIT University',
+      fieldOfStudy: 'Computer Science',
+      gpa: '8.5',
       country: 'India',
+      state: 'Odisha',
+      pincode: '751024',
+      address: 'Bhubaneswar, Odisha',
+      caste: 'General',
+      incomeBracket: '5L - 8L',
+      background: 'STEM enthusiast',
+      careerGoals: 'Software Engineer',
       search_scope: 'India'
     }); 
     setResults([]); 
@@ -875,6 +885,7 @@ export default function App() {
                         applicationStatus={applications.find(a => a.scholarshipId === result.scholarship.id)?.status}
                         onUpdateStatus={handleUpdateApplicationStatus}
                         onUpdateNotes={handleUpdateApplicationNotes}
+                        onDeleteApplication={handleDeleteApplication}
                         initialNotes={applications.find(a => a.scholarshipId === result.scholarship.id)?.notes}
                         onApply={handleApply}
                         onSave={handleSave}
@@ -932,6 +943,7 @@ export default function App() {
                         applicationStatus={applications.find(a => a.scholarshipId === result.scholarship.id)?.status}
                         onUpdateStatus={handleUpdateApplicationStatus}
                         onUpdateNotes={handleUpdateApplicationNotes}
+                        onDeleteApplication={handleDeleteApplication}
                         initialNotes={applications.find(a => a.scholarshipId === result.scholarship.id)?.notes}
                         onApply={handleApply}
                         onSave={handleSave}
@@ -975,6 +987,7 @@ export default function App() {
                   onAutoSave={handleAutoSave}
                   onUpdateStatus={handleUpdateApplicationStatus}
                   onUpdateNotes={handleUpdateApplicationNotes}
+                  onDeleteApplication={handleDeleteApplication}
                   isLoading={isLoading}
                   onBack={() => setView('Results')}
                 />
@@ -1348,6 +1361,7 @@ export default function App() {
                               applicationStatus={applications.find(a => a.scholarshipId === item.scholarship.id)?.status}
                               onUpdateStatus={handleUpdateApplicationStatus}
                               onUpdateNotes={handleUpdateApplicationNotes}
+                              onDeleteApplication={handleDeleteApplication}
                               initialNotes={applications.find(a => a.scholarshipId === item.scholarship.id)?.notes}
                               onSave={handleSave}
                               isSaved={savedIds.includes(item.scholarship.id)}
@@ -1383,6 +1397,7 @@ export default function App() {
                               applicationStatus={applications.find(a => a.scholarshipId === item.scholarship.id)?.status}
                               onUpdateStatus={handleUpdateApplicationStatus}
                               onUpdateNotes={handleUpdateApplicationNotes}
+                              onDeleteApplication={handleDeleteApplication}
                               initialNotes={applications.find(a => a.scholarshipId === item.scholarship.id)?.notes}
                               onSave={handleSave}
                               isSaved={savedIds.includes(item.scholarship.id)}

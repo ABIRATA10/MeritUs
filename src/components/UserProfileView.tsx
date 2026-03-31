@@ -16,6 +16,7 @@ interface UserProfileViewProps {
   onAutoSave?: (profile: UserProfile) => void;
   onUpdateStatus: (id: string, status: any) => void;
   onUpdateNotes: (id: string, notes: string) => void;
+  onDeleteApplication?: (id: string) => void;
   isLoading: boolean;
   onBack: () => void;
 }
@@ -31,6 +32,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onAutoSave,
   onUpdateStatus,
   onUpdateNotes,
+  onDeleteApplication,
   isLoading,
   onBack
 }) => {
@@ -340,6 +342,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     applicationStatus={applications.find(a => a.scholarshipId === result.scholarship.id)?.status}
                     onUpdateStatus={onUpdateStatus}
                     onUpdateNotes={onUpdateNotes}
+                    onDeleteApplication={onDeleteApplication}
                     initialNotes={applications.find(a => a.scholarshipId === result.scholarship.id)?.notes}
                     onApply={onApply}
                     onSave={onSave}

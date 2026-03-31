@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Scholarship, MatchResult, ApplicationStatus } from '../types';
-import { ExternalLink, Award, Calendar, Building2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Info, Search, Share2, Check, Heart, Clock, Trophy, XCircle, Edit3, Save, X, Bell, MapPin } from 'lucide-react';
+import { ExternalLink, Award, Calendar, Building2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Info, Search, Share2, Check, Heart, Clock, Trophy, XCircle, Edit3, Save, X, Bell, MapPin, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -16,6 +16,7 @@ interface ScholarshipCardProps {
   isSaved?: boolean;
   onView?: (id: string) => void;
   onSetReminder?: (scholarshipId: string, scholarshipTitle: string, time: string) => void;
+  onDeleteApplication?: (id: string) => void;
 }
 
 export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ 
@@ -29,7 +30,8 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
   onSave, 
   isSaved,
   onView,
-  onSetReminder
+  onSetReminder,
+  onDeleteApplication
 }) => {
   const { translateNumber } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -268,12 +270,12 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
               }}
               className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all px-4 py-2 rounded-full border ${
                 isSaved 
-                  ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-100' 
+                  ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-100 hover:bg-rose-600' 
                   : 'text-slate-400 hover:text-rose-500 bg-slate-50/50 border-slate-100'
               }`}
             >
-              <Heart size={14} className={isSaved ? "fill-current" : ""} />
-              <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+              {isSaved ? <Trash2 size={14} /> : <Heart size={14} />}
+              <span className="hidden sm:inline">{isSaved ? "Delete" : "Save"}</span>
             </button>
 
             <button
@@ -504,16 +506,31 @@ export const ScholarshipCard: React.FC<ScholarshipCardProps> = ({
             )}
             
             {applicationStatus && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowNotes(!showNotes);
-                }}
-                className={`p-4 rounded-2xl border transition-all ${showNotes ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-slate-50 border-slate-100 text-slate-400 hover:text-slate-600'}`}
-                title="Add Notes"
-              >
-                <Edit3 size={18} />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowNotes(!showNotes);
+                  }}
+                  className={`p-4 rounded-2xl border transition-all flex-1 flex items-center justify-center gap-2 ${showNotes ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-slate-50 border-slate-100 text-slate-400 hover:text-slate-600'}`}
+                  title="Add Notes"
+                >
+                  <Edit3 size={18} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Notes</span>
+                </button>
+                {onDeleteApplication && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteApplication(scholarship.id);
+                    }}
+                    className="p-4 rounded-2xl border bg-rose-50 border-rose-100 text-rose-500 hover:bg-rose-100 hover:text-rose-600 transition-all flex items-center justify-center"
+                    title="Delete Application"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
