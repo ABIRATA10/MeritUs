@@ -1,4 +1,4 @@
-import express from "express";
+mport express from "express";
 
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
@@ -47,12 +47,12 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (to: string, subject: string, text: string) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log(`[DEMO EMAIL] To: ${to} | Subject: ${subject} | Text: ${text}`);
+    console.log(⁠ [DEMO EMAIL] To: ${to} | Subject: ${subject} | Text: ${text} ⁠);
     return;
   }
   try {
     await transporter.sendMail({
-      from: `"MeritUs" <${process.env.EMAIL_USER}>`,
+      from: ⁠ "MeritUs" <${process.env.EMAIL_USER}> ⁠,
       to, subject, text
     });
   } catch (error) {
@@ -64,6 +64,12 @@ const sendEmail = async (to: string, subject: string, text: string) => {
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
+});
+
+// Prevents unhandled 'error' events from crashing the Node.js process
+// when a background pool connection drops unexpectedly.
+pool.on('error', (err) => {
+  console.error('Unexpected pg pool error:', err);
 });
 
 const query = async (sql: string, params: any[] = []) => {
@@ -78,6 +84,9 @@ const query = async (sql: string, params: any[] = []) => {
 
 const initDb = async () => {
   try {
+    // Cheap connectivity check — fail fast if DB is unreachable at boot
+    await query("SELECT 1");
+
     await query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -212,10 +221,24 @@ const initDb = async () => {
     console.log("Database initialized successfully");
   } catch (error) {
     console.error("Database initialization failed:", error);
+    process.exit(1); // Fail fast — don't serve a broken app
   }
 };
 
 initDb();
+
+// ─── GRACEFUL SHUTDOWN ────────────────────────────────────────────────────────
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received — closing pg pool');
+  await pool.end();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received — closing pg pool');
+  await pool.end();
+  process.exit(0);
+});
 
 // ─── GOOGLE OAUTH ─────────────────────────────────────────────────────────────
 const client = new OAuth2Client(
@@ -225,7 +248,7 @@ const client = new OAuth2Client(
 
 const getRedirectUri = () => {
   const baseUrl = (process.env.APP_URL || "").replace(/\/$/, "");
-  return `${baseUrl}/auth/google/callback`;
+  return ⁠ ${baseUrl}/auth/google/callback ⁠;
 };
 
 // ─── ADMIN MIDDLEWARE ─────────────────────────────────────────────────────────
@@ -479,7 +502,7 @@ app.post("/api/auth/send-verification", async (req, res) => {
     `, [email, code, expires]);
 
     await sendEmail(email, "Your MeritUs Verification Code",
-      `Your verification code is: ${code}\n\nThis code will expire in 15 minutes.`);
+      ⁠ Your verification code is: ${code}\n\nThis code will expire in 15 minutes. ⁠);
 
     res.json({ message: "Verification code sent", demoCode: code });
   } catch (error) {
@@ -512,7 +535,7 @@ app.post("/api/auth/signup", async (req, res) => {
     await query("DELETE FROM verification_codes WHERE email=$1", [email]);
 
     sendEmail(email, "Welcome to MeritUs!",
-      `Hi ${fullName},\n\nYour account has been created. Get ready to find the best scholarships!\n\nBest,\nThe MeritUs Team`
+      ⁠ Hi ${fullName},\n\nYour account has been created. Get ready to find the best scholarships!\n\nBest,\nThe MeritUs Team ⁠
     ).catch(console.error);
 
     const token = jwt.sign({ id, email }, JWT_SECRET, { expiresIn: '7d' });
@@ -579,7 +602,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
       [id, user.id, code, expires]);
 
     await sendEmail(email, "Reset Your MeritUs Password",
-      `Your 6-digit reset code is:\n\n${code}\n\nExpires in 15 minutes.`);
+      ⁠ Your 6-digit reset code is:\n\n${code}\n\nExpires in 15 minutes. ⁠);
 
     res.json({ message: "Reset code sent", demoCode: code });
   } catch (error) {
@@ -737,5 +760,5 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(⁠ Server running on http://localhost:${PORT} ⁠);
 });
