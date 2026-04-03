@@ -241,7 +241,7 @@ export default function App() {
     const matchesFilter = filter === 'All' || s.category === filter;
     const matchesScope = scopeFilter === 'All' || 
                          s.scope === scopeFilter || 
-                         (scopeFilter === 'State' && profile && s.location?.toLowerCase().includes(profile.state.toLowerCase()));
+                         (scopeFilter === 'State' && profile && profile.state && s.location?.toLowerCase().includes(profile.state.toLowerCase()));
     const matchesMajor = majorFilter === 'All' || (s.major && s.major.toLowerCase().includes(majorFilter.toLowerCase()));
     const matchesGpa = gpaFilter === 'All' || (s.minGpa !== undefined && s.minGpa <= parseFloat(gpaFilter));
     const matchesLocation = locationFilter === 'All' || (s.location && s.location.toLowerCase().includes(locationFilter.toLowerCase()));
@@ -772,7 +772,7 @@ export default function App() {
                   <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
                     <User size={40} />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-2">Welcome back, {profile.fullName.split(' ')[0]}!</h3>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2">Welcome back, {profile.fullName?.split(' ')[0] || 'User'}!</h3>
                   <p className="text-slate-500 font-medium mb-8">Your profile is saved and ready. We can find the latest scholarships matching your details.</p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1017,7 +1017,7 @@ export default function App() {
                     </h2>
                     <p className="text-slate-400 text-xs md:text-sm font-medium flex items-center gap-2">
                       <MapPin size={14} className="text-rose-400" /> 
-                      Matches for {profile.fullName} in {profile.country}
+                      Matches for {profile.fullName || 'User'} in {profile.country || 'your country'}
                     </p>
                   </div>
 

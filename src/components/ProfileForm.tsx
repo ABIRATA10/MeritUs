@@ -11,59 +11,41 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, initialData, onAutoSave }) => {
-  // ✅ FIX: Merge defaults WITH initialData so null DB fields never crash .length calls
-  const [formData, setFormData] = React.useState<UserProfile>({
-    fullName: '',
-    phoneNumber: '',
-    age: 20,
-    gender: 'Prefer not to say',
-    educationLevel: 'Undergraduate',
-    yearOfStudy: '1st Year',
-    institution: '',
-    fieldOfStudy: '',
-    gpa: '',
-    country: 'India',
-    state: '',
-    pincode: '',
-    address: '',
-    caste: '',
-    incomeBracket: '',
-    background: '',
-    careerGoals: '',
-    profileDeadline: '',
-    languagesSpoken: '',
-    volunteerExperience: '',
-    extracurriculars: '',
-    awards: '',
-    search_scope: 'Both',
-    ...initialData,
-    // Force null/undefined DB values → empty string for fields used with .length
-    pincode: initialData?.pincode ?? '',
-    state: initialData?.state ?? '',
-    address: initialData?.address ?? '',
-    country: initialData?.country ?? 'India',
-    fullName: initialData?.fullName ?? '',
-    phoneNumber: initialData?.phoneNumber ?? '',
-    gpa: initialData?.gpa ?? '',
-    institution: initialData?.institution ?? '',
-    fieldOfStudy: initialData?.fieldOfStudy ?? '',
-    caste: initialData?.caste ?? '',
-    incomeBracket: initialData?.incomeBracket ?? '',
-    background: initialData?.background ?? '',
-    careerGoals: initialData?.careerGoals ?? '',
-    profileDeadline: initialData?.profileDeadline ?? '',
-    languagesSpoken: initialData?.languagesSpoken ?? '',
-    volunteerExperience: initialData?.volunteerExperience ?? '',
-    extracurriculars: initialData?.extracurriculars ?? '',
-    awards: initialData?.awards ?? '',
-    search_scope: initialData?.search_scope ?? 'Both',
+  const [formData, setFormData] = React.useState<UserProfile>(() => {
+    const defaults: UserProfile = {
+      fullName: '',
+      phoneNumber: '',
+      age: 20,
+      gender: 'Prefer not to say',
+      educationLevel: 'Undergraduate',
+      yearOfStudy: '1st Year',
+      institution: '',
+      fieldOfStudy: '',
+      gpa: '',
+      country: 'India',
+      state: '',
+      pincode: '',
+      address: '',
+      caste: '',
+      incomeBracket: '',
+      background: '',
+      careerGoals: '',
+      profileDeadline: '',
+      languagesSpoken: '',
+      volunteerExperience: '',
+      extracurriculars: '',
+      awards: '',
+      search_scope: 'Both',
+    };
+    return initialData ? { ...defaults, ...initialData } : defaults;
   });
 
   const [isFetchingAddress, setIsFetchingAddress] = React.useState(false);
   const [lookupError, setLookupError] = React.useState<string | null>(null);
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved'>('idle');
 
-  const getCurrencySymbol = (country: string) => {
+  const getCurrencySymbol = (country?: string) => {
+    if (!country) return '$';
     const c = country.toLowerCase().trim();
     if (c === 'india') return '₹';
     if (['usa', 'united states', 'us'].includes(c)) return '$';
@@ -89,7 +71,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
   const completionPercentage = calculateCompletion();
 
   const fetchAddress = async (pincode: string) => {
-    if (formData.country.toLowerCase() === 'india' && pincode.length === 6) {
+    if (formData.country?.toLowerCase() === 'india' && pincode?.length === 6) {
       setIsFetchingAddress(true);
       setLookupError(null);
       try {
@@ -117,7 +99,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
   // Auto-lookup logic (India specific)
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      if (formData.pincode.length === 6 && !isFetchingAddress) {
+      if (formData.pincode?.length === 6 && !isFetchingAddress) {
         fetchAddress(formData.pincode);
       }
     }, 800);
@@ -269,7 +251,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
                 {isFetchingAddress ? (
                   <div className="w-5 h-5 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
                 ) : (
-                  formData.pincode.length === 6 && (
+                  formData.pincode?.length === 6 && (
                     <button 
                       type="button"
                       onClick={() => fetchAddress(formData.pincode)}
@@ -319,7 +301,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
 
         <div className="mt-8 space-y-1">
           <label className={labelClasses('text-blue-500')}>
-            Full Address {formData.country.toLowerCase() === 'india' && "(Auto-fills via Pincode)"}
+            Full Address {formData.country?.toLowerCase() === 'india' && "(Auto-fills via Pincode)"}
           </label>
           <input
             required

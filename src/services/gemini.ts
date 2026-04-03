@@ -2,6 +2,78 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { UserProfile, Scholarship, MatchResult, ScholarshipMatch, Application } from "../types";
 import { LOCAL_SCHOLARSHIP_DATA } from "../constants/scholarshipData";
 
+function getFallbackScholarships(userProfile: UserProfile): ScholarshipMatch[] {
+  const rows = LOCAL_SCHOLARSHIP_DATA.split('\n').slice(1).filter(row => row.trim() !== '');
+  const matches: ScholarshipMatch[] = [];
+
+  for (const row of rows) {
+    // Basic CSV parsing handling quotes
+    const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
+    const cols = [];
+    let match;
+    while ((match = regex.exec(row)) !== null) {
+      cols.push(match[1].replace(/^"|"$/g, ''));
+    }
+    
+    // If simple split is needed because regex fails on empty fields
+    const simpleCols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+    const parsedCols = simpleCols.map(c => c.replace(/^"|"$/g, '').trim());
+
+    if (parsedCols.length < 12) continue;
+
+    const [id, title, provider, providerType, gender, category, state, incomeLimit, educationLevel, eligibility, deadline, link] = parsedCols;
+
+    // Basic matching logic
+    let score = 50;
+    let reasoning = "Matched based on general eligibility.";
+
+    if (userProfile.gender && gender !== 'All' && gender !== userProfile.gender) {
+      continue; // Skip if gender doesn't match
+    } else if (gender === userProfile.gender) {
+      score += 20;
+      reasoning = "Strong match for your gender.";
+    }
+
+    if (state !== 'All' && userProfile.state && state.toLowerCase() !== userProfile.state.toLowerCase()) {
+      continue; // Skip if state doesn't match
+    } else if (state !== 'All') {
+      score += 20;
+      reasoning = "Matches your specific state.";
+    }
+
+    matches.push({
+      scholarship: {
+        id: `local-${id}`,
+        title,
+        provider,
+        amount: incomeLimit !== 'NA' ? `Up to ₹${incomeLimit}` : 'Variable',
+        deadline,
+        eligibilityCriteria: eligibility,
+        description: `${providerType} scholarship for ${educationLevel} students.`,
+        category: providerType.includes('Government') ? 'Government' : 'Private',
+        scope: state === 'All' ? 'National' : 'State',
+        country: 'India',
+        link,
+        targetCommunity: category,
+        major: 'General',
+        minGpa: 0,
+        location: state === 'All' ? 'India' : state,
+        type: 'Merit-based',
+        fullyFunded: false,
+        genderSpecific: gender
+      },
+      match: {
+        scholarshipId: `local-${id}`,
+        matchScore: Math.min(score, 98),
+        reasoning,
+        localCurrencyAmount: incomeLimit !== 'NA' ? `₹${incomeLimit}` : 'Variable'
+      }
+    });
+  }
+
+  return matches.sort((a, b) => b.match.matchScore - a.match.matchScore).slice(0, 20);
+}
+
 const apiKey = process.env.GEMINI_API_KEY || "";
 if (!apiKey) {
   console.error("GEMINI_API_KEY is missing. Please set it in your environment variables.");
@@ -14,7 +86,8 @@ export async function findScholarships(
   userProfile: UserProfile
 ): Promise<ScholarshipMatch[]> {
   if (!apiKey) {
-    throw new Error("The Gemini API key is missing. Please configure the GEMINI_API_KEY environment variable to enable AI-powered scholarship matching.");
+    console.warn("The Gemini API key is missing. Falling back to local data.");
+    return getFallbackScholarships(userProfile);
   }
 
   let dbScholarships = [];
@@ -155,16 +228,19 @@ export async function findScholarships(
       throw new Error("Network error: We couldn't connect to the AI service. Please check your internet connection and try again.");
     }
 
-    if (error.message?.includes("quota") || error.message?.includes("limit") || error.message?.includes("429")) {
-      throw new Error("Our AI advisor is currently handling a lot of requests! 🚀 Please wait a minute and try again—we're eager to help you find your funding!");
+    if (error.message?.includes("quota") || error.message?.includes("limit") || error.message?.includes("429") || error.message?.includes("fetch") || error.message?.includes("network")) {
+      console.warn("Falling back to local data due to API error.");
+      return getFallbackScholarships(userProfile);
     }
     
     if (error.message?.includes("JSON") || error.name === "SyntaxError") {
-      throw new Error("We encountered a small hiccup while processing the scholarship data. 🧩 Please try searching again, and we'll get it right this time!");
+      console.warn("Falling back to local data due to JSON parsing error.");
+      return getFallbackScholarships(userProfile);
     }
 
     if (error.message?.includes("API key not valid") || error.message?.includes("403")) {
-      throw new Error("The provided Gemini API key is invalid or lacks permissions. Please check your configuration.");
+      console.warn("Falling back to local data due to API key error.");
+      return getFallbackScholarships(userProfile);
     }
 
     if (error.message?.includes("matching your current profile")) {
