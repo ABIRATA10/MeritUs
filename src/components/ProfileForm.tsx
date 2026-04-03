@@ -542,36 +542,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
               placeholder="e.g. 8.5/10.0"
             />
           </div>
-          
-          <div className="space-y-1">
-            <label className={labelClasses('text-rose-500')}>
-              Age
-            </label>
-            <input
-              required
-              type="number"
-              name="age"
-              value={formData.age}
-              onChange={handleChange}
-              className={inputClasses}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className={labelClasses('text-rose-500')}>
-              Profile Completion Deadline
-            </label>
-            <input
-              type="date"
-              name="profileDeadline"
-              value={formData.profileDeadline}
-              onChange={handleChange}
-              className={inputClasses}
-            />
-            <p className="text-[9px] text-slate-400 font-medium italic">
-              Setting a deadline helps prioritize your scholarship search.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -821,12 +791,12 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ onSubmit, isLoading, i
         {isLoading ? (
           <>
             <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-            Searching Global Opportunities...
+            Saving & Searching...
           </>
         ) : (
           <>
             <Sparkles size={24} />
-            Find My Scholarships
+            Save & Find Scholarships
           </>
         )}
       </button>

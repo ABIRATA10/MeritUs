@@ -11,7 +11,7 @@ import { AdminPortal } from './components/AdminPortal';
 import { StudyAbroad } from './components/StudyAbroad';
 import { UserProfile, Scholarship, MatchResult, User as UserType, ScholarshipMatch, Application, ApplicationStatus, Reminder } from './types';
 import { findScholarships } from './services/gemini';
-import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, Globe, MapPin, User, LogOut, LayoutDashboard, BookmarkCheck, Heart, Bot, AlertTriangle, Clock, RefreshCw, History, Bell, Menu, X, Plane } from 'lucide-react';
+import { Sparkles, GraduationCap, Filter, Search, ArrowLeft, ArrowRight, Globe, MapPin, User, LogOut, LayoutDashboard, BookmarkCheck, Heart, Bot, AlertTriangle, Clock, RefreshCw, History, Bell, Menu, X, Plane } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './components/Logo';
 import { useLanguage } from './contexts/LanguageContext';
@@ -778,42 +778,14 @@ export default function App() {
                 </p>
               </div>
               
-              {profile ? (
-                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-50 text-center max-w-xl mx-auto">
-                  <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <User size={40} />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-2">Welcome back, {profile.preferredName || profile.fullName?.split(' ')[0] || 'User'}!</h3>
-                  <p className="text-slate-500 font-medium mb-8">Your profile is saved and ready. We can find the latest scholarships matching your details.</p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button 
-                      onClick={() => setView('Profile')}
-                      className="px-8 py-4 bg-slate-100 text-slate-900 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                    >
-                      Edit Profile
-                    </button>
-                    <button 
-                      onClick={() => handleProfileSubmit(profile)}
-                      disabled={isLoading}
-                      className="px-8 py-4 bg-blue-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Searching...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={18} /> Find Scholarships
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <ProfileForm onSubmit={handleProfileSubmit} onAutoSave={handleAutoSave} isLoading={isLoading} />
-              )}
+              <div className="flex justify-center mb-16">
+                <button 
+                  onClick={() => setView('Profile')}
+                  className="px-10 py-5 bg-blue-600 text-white rounded-[2rem] text-lg font-black uppercase tracking-widest shadow-2xl shadow-blue-200 hover:bg-blue-700 hover:scale-105 hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                >
+                  Welcome
+                </button>
+              </div>
               
               <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
                 <div className="p-6 group">
@@ -1000,7 +972,7 @@ export default function App() {
                   onUpdateNotes={handleUpdateApplicationNotes}
                   onDeleteApplication={handleDeleteApplication}
                   isLoading={isLoading}
-                  onBack={() => setView('Results')}
+                  onBack={() => handleProfileSubmit(profile)}
                 />
               ) : (
                 <div className="max-w-4xl mx-auto">
